@@ -40,6 +40,10 @@ ls.add_snippets("typescript", {
   snip("jlog", "console.log('<=========>    ${1}',JSON.stringify(${1}, null, 2))"),
 })
 
+ls.add_snippets("typescript", {
+  snip("tlog", "console.time('<=========>    ${1}') \n  console.timeEnd('<=========>    ${1}')"),
+})
+
 ls.add_snippets("cpp", {
   snip("db", 'cout << "${s2} ::" << ${s2} << endl;'),
 })

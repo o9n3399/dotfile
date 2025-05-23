@@ -1,3 +1,4 @@
+local filetypes = require("nvim-web-devicons.filetypes")
 function config()
   -- import lspconfig plugin
   local lspconfig = require("lspconfig")
@@ -124,6 +125,39 @@ function config()
             completion = {
               callSnippet = "Replace",
             },
+          },
+        },
+      })
+    end,
+    ["harper_ls"] = function()
+      lspconfig["harper_ls"].setup({
+        settings = {
+          ["harper-ls"] = {
+            userDictPath = "",
+            fileDictPath = "",
+            filetypes = { "markdown", "typescriptreact" },
+            linters = {
+              SpellCheck = true,
+              SpelledNumbers = false,
+              AnA = true,
+              SentenceCapitalization = true,
+              UnclosedQuotes = true,
+              WrongQuotes = false,
+              LongSentences = true,
+              RepeatedWords = true,
+              Spaces = true,
+              Matcher = true,
+              CorrectNumberSuffix = true,
+            },
+            codeActions = {
+              ForceStable = false,
+            },
+            markdown = {
+              IgnoreLinkTitle = false,
+            },
+            diagnosticSeverity = "hint",
+            isolateEnglish = false,
+            dialect = "American",
           },
         },
       })

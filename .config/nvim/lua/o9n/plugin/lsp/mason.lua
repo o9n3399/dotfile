@@ -30,6 +30,7 @@ function config()
       "bashls",
       "gopls",
       "ts_ls",
+      "harper_ls",
     },
   })
 
