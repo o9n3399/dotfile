@@ -13,7 +13,7 @@ keymap.set("n", "<leader>-", "<C-x>", { desc = "Decrement number" }) -- decremen
 -- window management
 vim.api.nvim_set_keymap("n", "s", "<Nop>", { noremap = true, silent = true })
 keymap.set("n", "sv", "<C-w>v", { desc = "Split window vertically" }) -- split window vertically
-keymap.set("n", "ss", "<C-w>s", { desc = "Split window horizontally" }) -- split window horizontally
+keymap.set("n", "sh", "<C-w>s", { desc = "Split window horizontally" }) -- split window horizontally
 
 keymap.set("n", "sh", "<C-w>h", { desc = "Split window horizontally" }) -- split window horizontally
 keymap.set("n", "sj", "<C-w>j", { desc = "Split window horizontally" }) -- split window horizontally
@@ -28,3 +28,6 @@ keymap.set("n", "tx", "<cmd>tabclose<CR>", { desc = "Close current tab" }) -- cl
 keymap.set("n", "tn", "<cmd>tabn<CR>", { desc = "Go to next tab" }) --  go to next tab
 keymap.set("n", "tp", "<cmd>tabp<CR>", { desc = "Go to previous tab" }) --  go to previous tab
 keymap.set("n", "tf", "<cmd>tabnew %<CR>", { desc = "Open current buffer in new tab" }) --  move current buffer to new tab
+
+-- format json text
+keymap.set("n", "<leader>jq", " ggVG!jq .<CR>", { desc = "" }) -- format json
