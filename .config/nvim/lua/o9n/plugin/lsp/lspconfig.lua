@@ -113,6 +113,18 @@ function config()
         filetypes = { "graphql", "gql", "svelte", "typescriptreact", "javascriptreact" },
       })
     end,
+    ["rustfmt"] = function()
+      lspconfig["rustfmt"].setup({
+        capabilities = capabilities,
+        filetypes = { "rust" },
+      })
+    end,
+    ["rust_analyzer"] = function()
+      lspconfig["rust_analyzer"].setup({
+        capabilities = capabilities,
+        filetypes = { "rust" },
+      })
+    end,
     ["emmet_ls"] = function()
       -- configure emmet language server
       lspconfig["emmet_ls"].setup({

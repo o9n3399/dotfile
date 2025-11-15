@@ -20,6 +20,7 @@ function config()
   mason_lspconfig.setup({
     -- list of servers for mason to install
     ensure_installed = {
+      "rust_analyzer",
       "html",
       "cssls",
       "tailwindcss",
@@ -43,6 +44,7 @@ function config()
       "pylint",
       "eslint_d",
       "golangci-lint-langserver",
+      "rustfmt",
     },
   })
 end

@@ -37,6 +37,7 @@ function config()
       "c",
       "http",
       "go",
+      "rust",
     },
     incremental_selection = {
       enable = true,
