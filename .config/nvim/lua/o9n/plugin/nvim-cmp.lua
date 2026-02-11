@@ -1,66 +1,99 @@
-function config()
+local config = function()
   local cmp = require("cmp")
   local luasnip = require("luasnip")
   local lspkind = require("lspkind")
 
-  -- loads vscode style snippets from installed plugins (e.g. friendly-snippets)
   require("luasnip.loaders.from_vscode").lazy_load()
 
   cmp.setup({
     completion = {
-      completeopt = "menu,menuone,preview,noselect",
+      completeopt = "menu,menuone,noinsert",
     },
-    snippet = { -- configure how nvim-cmp interacts with snippet engine
+
+    snippet = {
       expand = function(args)
         luasnip.lsp_expand(args.body)
       end,
     },
+
     mapping = cmp.mapping.preset.insert({
-      ["<C-k>"] = cmp.mapping.select_prev_item(), -- previous suggestion
-      ["<C-j>"] = cmp.mapping.select_next_item(), -- next suggestion
-      ["<tab>"] = cmp.mapping.select_next_item(), -- next suggestion
+      ["<C-k>"] = cmp.mapping.select_prev_item(),
+      ["<C-j>"] = cmp.mapping.select_next_item(),
+
+      ["<Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_next_item()
+        elseif require("codeium").is_enabled() then
+          vim.fn["codeium#Accept"]()
+        elseif luasnip.expand_or_jumpable() then
+          luasnip.expand_or_jump()
+        else
+          fallback()
+        end
+      end, { "i", "s" }),
+
+      ["<S-Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_prev_item()
+        elseif luasnip.jumpable(-1) then
+          luasnip.jump(-1)
+        else
+          fallback()
+        end
+      end, { "i", "s" }),
+
       ["<C-b>"] = cmp.mapping.scroll_docs(-4),
       ["<C-f>"] = cmp.mapping.scroll_docs(4),
-      ["<C-Space>"] = cmp.mapping.complete(), -- show completion suggestions
-      ["<C-e>"] = cmp.mapping.abort(), -- close completion window
+      ["<C-Space>"] = cmp.mapping.complete(),
+      ["<C-e>"] = cmp.mapping.abort(),
       ["<CR>"] = cmp.mapping.confirm({ select = false }),
     }),
-    -- sources for autocompletion
+
     sources = cmp.config.sources({
-      { name = "nvim_lsp" },
-      { name = "luasnip" }, -- snippets
-      { name = "buffer" }, -- text within current buffer
-      { name = "path" }, -- file system paths
+      { name = "codeium", priority = 1000 },
+      { name = "nvim_lsp", priority = 750 },
+      { name = "luasnip", priority = 500 },
+    }, {
+      { name = "buffer" },
+      { name = "path" },
     }),
 
+    -- window = {
+    --   completion = cmp.config.window.bordered(),
+    --   documentation = cmp.config.window.bordered(),
+    -- },
+
     window = {
-      documentation = {
-        border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
-        winhighlight = "Normal:Normal,FloatBorder:BorderBG,CursorLine:PmenuSel,Search:None",
-      },
       completion = cmp.config.window.bordered({
-        winhighlight = "Normal:Normal,FloatBorder:BorderBG,CursorLine:PmenuSel,Search:None",
+        border = "rounded",
+        winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+      }),
+      documentation = cmp.config.window.bordered({
+        border = "rounded",
+        winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
       }),
     },
 
-    -- configure lspkind for vs-code like pictograms in completion menu
     formatting = {
       format = lspkind.cmp_format({
-        with_text = true,
-        maxwidth = 50,
-        transparent = true,
-        mode = "symbol",
-        fields = { "kind", "abbr", "menu" },
+        mode = "symbol_text",
+        maxwidth = 40,
+        ellipsis_char = "...",
         before = function(entry, vim_item)
           vim_item.menu = ({
             nvim_lsp = "[LSP]",
             luasnip = "[SNIP]",
             buffer = "[BUFF]",
             path = "[PATH]",
+            codeium = "[AI]",
           })[entry.source.name]
           return vim_item
         end,
       }),
+    },
+
+    experimental = {
+      ghost_text = true, --blur the text
     },
   })
 end
@@ -71,9 +104,6 @@ return {
   dependencies = {
     "hrsh7th/cmp-buffer", -- source for text in buffer
     "hrsh7th/cmp-path", -- source for file system paths
-    -- {
-    --   "github/copilot.vim",
-    -- },
     {
       "L3MON4D3/LuaSnip",
       -- follow latest release.
