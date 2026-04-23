@@ -1,60 +1,65 @@
-function config()
-  -- import nvim-treesitter plugin
-  local treesitter = require("nvim-treesitter.configs")
+local ensure_installed = {
+  "json",
+  "javascript",
+  "typescript",
+  "tsx",
+  "yaml",
+  "html",
+  "css",
+  "prisma",
+  "markdown",
+  "markdown_inline",
+  "svelte",
+  "graphql",
+  "bash",
+  "lua",
+  "vim",
+  "dockerfile",
+  "gitignore",
+  "query",
+  "vimdoc",
+  "c",
+  "http",
+  "go",
+  "rust",
+}
 
-  -- configure treesitter
-  treesitter.setup({ -- enable syntax highlighting
-    highlight = {
-      enable = true,
-    },
-    -- enable indentation
-    indent = { enable = true },
-    -- enable autotagging (w/ nvim-ts-autotag plugin)
-    autotag = {
-      enable = true,
-    },
-    -- ensure these language parsers are installed
-    ensure_installed = {
-      "json",
-      "javascript",
-      "typescript",
-      "tsx",
-      "yaml",
-      "html",
-      "css",
-      "prisma",
-      "markdown",
-      "markdown_inline",
-      "svelte",
-      "graphql",
-      "bash",
-      "lua",
-      "vim",
-      "dockerfile",
-      "gitignore",
-      "query",
-      "vimdoc",
-      "c",
-      "http",
-      "go",
-      "rust",
-    },
-    incremental_selection = {
-      enable = true,
-      keymaps = {
-        init_selection = "<C-space>",
-        node_incremental = "<C-space>",
-        scope_incremental = false,
-        node_decremental = "<bs>",
-      },
-    },
+local function config()
+  require("nvim-treesitter").setup({})
+
+  local installed = require("nvim-treesitter.config").get_installed("parsers")
+  local installed_set = {}
+  for _, p in ipairs(installed) do
+    installed_set[p] = true
+  end
+  local missing = {}
+  for _, p in ipairs(ensure_installed) do
+    if not installed_set[p] then
+      table.insert(missing, p)
+    end
+  end
+  if #missing > 0 then
+    require("nvim-treesitter").install(missing)
+  end
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("o9n_treesitter", { clear = true }),
+    callback = function(args)
+      pcall(vim.treesitter.start, args.buf)
+      pcall(function()
+        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end)
+    end,
   })
 end
 
 return {
   "nvim-treesitter/nvim-treesitter",
+  branch = "main",
   event = { "BufReadPre", "BufNewFile" },
-  build = ":TSUpdate",
+  build = function()
+    require("nvim-treesitter").update()
+  end,
   dependencies = {
     "windwp/nvim-ts-autotag",
   },

@@ -42,6 +42,7 @@ function config()
       "eslint_d",
       "golangci-lint-langserver",
       "rustfmt",
+      "tree-sitter-cli",
     },
   })
 end
