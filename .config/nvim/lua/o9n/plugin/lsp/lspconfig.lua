@@ -63,6 +63,11 @@ function config()
   -- Change the Diagnostic symbols in the sign column (gutter)
   local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
   vim.diagnostic.config({
+    underline = false,
+    update_in_insert = false,
+    virtual_text = false,
+    -- virtual_text = { spacing = 4, prefix = "●" },
+    severity_sort = true,
     signs = {
       active = true,
       text = {
@@ -72,14 +77,6 @@ function config()
         [vim.diagnostic.severity.INFO] = signs.Info,
       },
     },
-  })
-
-  vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-    underline = false,
-    update_in_insert = false,
-    virtual_text = false,
-    -- virtual_text = { spacing = 4, prefix = "●" },
-    severity_sort = true,
   })
 
   local lspconfig = require("lspconfig")

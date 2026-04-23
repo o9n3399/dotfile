@@ -23,8 +23,6 @@ local config = function()
       ["<Tab>"] = cmp.mapping(function(fallback)
         if cmp.visible() then
           cmp.select_next_item()
-        elseif require("codeium").is_enabled() then
-          vim.fn["codeium#Accept"]()
         elseif luasnip.expand_or_jumpable() then
           luasnip.expand_or_jump()
         else
