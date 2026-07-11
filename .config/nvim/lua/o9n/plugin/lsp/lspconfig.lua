@@ -1,9 +1,4 @@
-local filetypes = require("nvim-web-devicons.filetypes")
 function config()
-  -- import lspconfig plugin
-  local lspconfig = require("lspconfig")
-  -- import mason_lspconfig plugin
-  local mason_lspconfig = require("mason-lspconfig")
   -- import cmp-nvim-lsp plugin
   local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
@@ -79,106 +74,70 @@ function config()
     },
   })
 
-  local lspconfig = require("lspconfig")
+  -- Apply cmp capabilities to every server (merged into each config).
+  vim.lsp.config("*", {
+    capabilities = capabilities,
+  })
 
-  mason_lspconfig.setup({
-    -- default handler for installed servers
-    function(server_name)
-      lspconfig[server_name].setup({
-        capabilities = capabilities,
-      })
-    end,
-    ["svelte"] = function()
-      -- configure svelte server
-      lspconfig["svelte"].setup({
-        capabilities = capabilities,
-        on_attach = function(client, bufnr)
-          vim.api.nvim_create_autocmd("BufWritePost", {
-            pattern = { "*.js", "*.ts" },
-            callback = function(ctx)
-              -- Here use ctx.match instead of ctx.file
-              client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-            end,
-          })
+  -- lua_ls: recognize the "vim" global for Neovim config editing.
+  vim.lsp.config("lua_ls", {
+    settings = {
+      Lua = {
+        diagnostics = {
+          globals = { "vim" },
+        },
+        completion = {
+          callSnippet = "Replace",
+        },
+      },
+    },
+  })
+
+  vim.lsp.config("rust_analyzer", {
+    filetypes = { "rust" },
+  })
+
+  vim.lsp.config("svelte", {
+    on_attach = function(client, bufnr)
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        pattern = { "*.js", "*.ts" },
+        callback = function(ctx)
+          client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
         end,
       })
     end,
-    -- ["graphql"] = function()
-    --   -- configure graphql language server
-    --   lspconfig["graphql"].setup({
-    --     capabilities = capabilities,
-    --     filetypes = { "graphql", "gql", "svelte", "typescriptreact", "javascriptreact" },
-    --   })
-    -- end,
-    ["rustfmt"] = function()
-      lspconfig["rustfmt"].setup({
-        capabilities = capabilities,
-        filetypes = { "rust" },
-      })
-    end,
-    ["rust_analyzer"] = function()
-      lspconfig["rust_analyzer"].setup({
-        capabilities = capabilities,
-        filetypes = { "rust" },
-      })
-    end,
-    -- ["emmet_ls"] = function()
-    --   -- configure emmet language server
-    --   lspconfig["emmet_ls"].setup({
-    --     capabilities = capabilities,
-    --     filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "svelte" },
-    --   })
-    -- end,
-    ["lua_ls"] = function()
-      -- configure lua server (with special settings)
-      lspconfig["lua_ls"].setup({
-        capabilities = capabilities,
-        settings = {
-          Lua = {
-            -- make the language server recognize "vim" global
-            diagnostics = {
-              globals = { "vim" },
-            },
-            completion = {
-              callSnippet = "Replace",
-            },
-          },
+  })
+
+  vim.lsp.config("harper_ls", {
+    settings = {
+      ["harper-ls"] = {
+        userDictPath = "",
+        fileDictPath = "",
+        filetypes = { "markdown", "typescriptreact" },
+        linters = {
+          SpellCheck = true,
+          SpelledNumbers = false,
+          AnA = true,
+          SentenceCapitalization = true,
+          UnclosedQuotes = true,
+          WrongQuotes = false,
+          LongSentences = true,
+          RepeatedWords = true,
+          Spaces = true,
+          Matcher = true,
+          CorrectNumberSuffix = true,
         },
-      })
-    end,
-    ["harper_ls"] = function()
-      lspconfig["harper_ls"].setup({
-        settings = {
-          ["harper-ls"] = {
-            userDictPath = "",
-            fileDictPath = "",
-            filetypes = { "markdown", "typescriptreact" },
-            linters = {
-              SpellCheck = true,
-              SpelledNumbers = false,
-              AnA = true,
-              SentenceCapitalization = true,
-              UnclosedQuotes = true,
-              WrongQuotes = false,
-              LongSentences = true,
-              RepeatedWords = true,
-              Spaces = true,
-              Matcher = true,
-              CorrectNumberSuffix = true,
-            },
-            codeActions = {
-              ForceStable = false,
-            },
-            markdown = {
-              IgnoreLinkTitle = false,
-            },
-            diagnosticSeverity = "hint",
-            isolateEnglish = false,
-            dialect = "American",
-          },
+        codeActions = {
+          ForceStable = false,
         },
-      })
-    end,
+        markdown = {
+          IgnoreLinkTitle = false,
+        },
+        diagnosticSeverity = "hint",
+        isolateEnglish = false,
+        dialect = "American",
+      },
+    },
   })
 end
 

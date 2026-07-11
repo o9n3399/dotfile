@@ -30,6 +30,11 @@ function config()
       "ts_ls",
       "harper_ls",
     },
+    -- stylua/prettier/etc. are formatters (run via conform), not LSP servers.
+    -- Prevent mason-lspconfig from auto-starting `stylua --lsp` (unsupported flag).
+    automatic_enable = {
+      exclude = { "stylua" },
+    },
   })
 
   mason_tool_installer.setup({
