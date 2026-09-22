@@ -31,3 +31,10 @@ keymap.set("n", "tf", "<cmd>tabnew %<CR>", { desc = "Open current buffer in new 
 
 -- format json text
 keymap.set("n", "<leader>jq", " ggVG!jq .<CR>", { desc = "" }) -- format json
+
+-- toggle comment with Ctrl+/ (VSCode style) via Comment.nvim
+-- map both <C-/> and <C-_> because terminals differ in what Ctrl+/ sends
+keymap.set("n", "<C-_>", "<Plug>(comment_toggle_linewise_current)", { desc = "Toggle comment" })
+keymap.set("n", "<C-/>", "<Plug>(comment_toggle_linewise_current)", { desc = "Toggle comment" })
+keymap.set("x", "<C-_>", "<Plug>(comment_toggle_linewise_visual)", { desc = "Toggle comment" })
+keymap.set("x", "<C-/>", "<Plug>(comment_toggle_linewise_visual)", { desc = "Toggle comment" })
