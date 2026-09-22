@@ -22,6 +22,7 @@ local ensure_installed = {
   "http",
   "go",
   "rust",
+  "python",
 }
 
 local function config()
