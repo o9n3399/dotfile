@@ -40,7 +40,7 @@ Read your memory first; it may already map the modules, entry points and convent
 
 ### Step 1: Explore
 
-Read the project's `CLAUDE.md` (if any), then locate every file the task touches with Grep/Glob, read the ones you will modify, and identify existing patterns to reuse.
+Read the project's `CLAUDE.md` (if any), then locate every file the task touches with Grep/Glob, read the ones you will modify, and identify existing patterns to reuse. If the prompt references a research report (`.dev-plan/research/*.md`), read it and follow its recommendation unless the code contradicts it — then say so under Risks.
 
 **Turn budget** (you have 60 turns; each response counts as one, however many tools it calls):
 - Batch independent Grep/Glob/Read calls into a single response.

@@ -2,6 +2,11 @@
   "env": {
     "BROWSER": "google-chrome-stable"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "model": "opus",
   "statusLine": {
     "type": "command",
@@ -9,15 +14,10 @@
     "padding": 0
   },
   "language": "vietnam",
+  "autoCompactWindow": 400000,
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "autoCompactWindow": 400000,
-  "attribution": {
-    "commit": "",
-    "pr": "",
-    "sessionUrl": false
-  }
+  "voiceEnabled": true
 }
