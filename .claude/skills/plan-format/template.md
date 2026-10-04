@@ -34,6 +34,12 @@ Alternatives considered: <only if a real one exists — why rejected>
 - [ ] 2. <behavior delivered>
   - Verify: `<command or check>`
 
+## UI Checks
+
+<only if the change touches web UI; otherwise omit the section>
+
+- [ ] `/route` — <interaction> → <expected visible result>
+
 ## Risks
 
 - <migrations, breaking changes, env/config changes>

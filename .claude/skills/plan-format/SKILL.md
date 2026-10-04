@@ -19,7 +19,8 @@ Define how an implementation plan is written (planner) and read (reviewer).
 5. **Steps are vertical slices** — each step delivers one testable behavior end-to-end, not one layer (avoid "step 1: all entities, step 2: all services").
 6. Every step is a checkbox `- [ ]` with a `Verify:` line naming a concrete command or check.
 7. List every affected file with a one-line reason. Mark new files with `(new)`.
-8. Keep it short: a plan a human can approve in under 2 minutes.
+8. **UI Checks** only when the change touches web UI: one line per affected screen — route, the interaction, and the visible result a user would expect. Include the screens that reuse a changed component, not just the one in the task. In bug-fix mode, the first check replays the symptom's scenario and expects the fixed behavior.
+9. Keep it short: a plan a human can approve in under 2 minutes.
 
 ## Expected Output
 

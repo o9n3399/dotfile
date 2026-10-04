@@ -45,9 +45,13 @@ Agent(subagent_type: coder, prompt: "Mode: bug-fix. Implement <plan-path> red-fi
 
 Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). On FAIL → Agent(subagent_type: coder, prompt: "Mode: bug-fix. Fix these failures for <plan-path>: <failures>") → repeat.
 
-### Step 5: Review (max 2 iterations)
+### Step 5: Review + UI Verify (max 2 iterations)
 
-Agent(subagent_type: reviewer, prompt: "Mode: bug-fix. Review changes against main. Plan file: <plan-path>."). `CHANGES_REQUESTED` → coder fixes → back to Step 4 → review again with prompt: "Mode: bug-fix. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."
+Agent(subagent_type: reviewer, prompt: "Mode: bug-fix. Review changes against main. Plan file: <plan-path>."), and in the same message when triggered Agent(subagent_type: ui-verifier, prompt: "Mode: bug-fix. Verify the UI Checks of <plan-path>.").
+
+**UI verify trigger**: the plan has a `## UI Checks` section, or the coder's changed files include `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`, `*.html`, `*.css`, `*.scss`. When triggered, launch `ui-verifier` in the same message as the reviewer — both are read-only on code. `ENV_MISSING` from ui-verifier is not a failure: show what it needs and continue.
+
+`CHANGES_REQUESTED` or UI `FAIL` → one coder call with both lists → back to Step 4 → reviewer again with prompt: "Mode: bug-fix. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>." and ui-verifier with "Mode: bug-fix. Re-verify only these failed UI Checks of <plan-path>: <failed checks>."
 
 ### Step 6: Commit
 
@@ -57,5 +61,5 @@ AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent,
 
 - Root cause (file:line)
 - Regression test: red → green confirmed
-- Review verdict, commits
+- Review verdict, UI verify result, commits
 - If the change affects runtime behavior a test can't fully show (UI, HTTP API, CLI output), suggest `/verify` to run the app and confirm it
