@@ -9,7 +9,7 @@ Personal dotfiles, tracked as the pieces of `~/.config` and `~/.claude` listed b
 | [`.config/nvim`](.config/nvim) | Neovim config, [lazy.nvim](https://github.com/folke/lazy.nvim)-based, namespace `o9n` | Active — see [`.config/nvim/CLAUDE.md`](.config/nvim/CLAUDE.md) for architecture, keymaps, LSP setup |
 | `.config/nvim.packer` | Older Neovim config, [packer.nvim](https://github.com/wbthomason/packer.nvim)-based | Legacy — unmaintained since the initial commit (Apr 2025), superseded by `.config/nvim`, kept for reference only |
 | [`.config/tmux`](.config/tmux) | tmux config, [TPM](https://github.com/tmux-plugins/tpm)-based | Active — see [`docs/tmux.md`](docs/tmux.md) |
-| [`.claude`](.claude) | Claude Code global config — `CLAUDE.md`, `settings.json`, `/dev*` commands, 7 agents (planner, researcher, coder, test-runner, reviewer, ui-verifier, git-agent), their skills and guard hooks; `mcp.json` holds the user-scope MCP servers | Active — snapshot copy, see Usage |
+| [`.claude`](.claude) | Claude Code global config — `CLAUDE.md`, `settings.json`, `/dev*` commands, 8 agents (planner, researcher, coder, test-runner, reviewer, ui-verifier, doc-writer, git-agent), their skills and guard hooks; `mcp.json` holds the user-scope MCP servers | Active — snapshot copy, see Usage |
 
 ## docs/
 

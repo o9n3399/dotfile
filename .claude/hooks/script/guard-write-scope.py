@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# PreToolUse guard: only allow Write/Edit inside directories named by argv (e.g. .dev-plan agent-memory-local .dev-plan/research).
+# PreToolUse guard: only allow Write/Edit inside directories named by argv (e.g. .dev-plan agent-memory-local .dev-plan/research),
+# or to files matching a basename pattern (e.g. '*.md').
+import fnmatch
 import json
 import os
 import sys
@@ -11,6 +13,8 @@ path = json.load(sys.stdin).get("tool_input", {}).get("file_path", "")
 parts = os.path.realpath(path).split(os.sep)
 
 def inside(scope):
+    if "*" in scope:
+        return fnmatch.fnmatch(parts[-1], scope)
     # A multi-segment scope like ".dev-plan/research" must appear as consecutive path components.
     seg = scope.split("/")
     dirs = parts[:-1]
