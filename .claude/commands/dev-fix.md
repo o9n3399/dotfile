@@ -1,8 +1,9 @@
 ---
 description: Fix a bug reproduce-first — failing regression test, minimal root-cause fix, review, commit
-argument-hint: [bug description] [--yes]
+argument-hint: [bug description] [--yes] [--lite]
 allowed-tools:
   - Agent
+  - SendMessage
   - AskUserQuestion
   - Read
 ---
@@ -13,13 +14,19 @@ Bug: $ARGUMENTS
 
 ## Execution Contract (non-negotiable)
 
-Every step MUST be delegated via the Agent tool. Every agent prompt MUST start with `Mode: bug-fix.` so the preloaded `bug-fix` skill applies. You are forbidden from:
+Every step MUST be delegated via the Agent tool (or SendMessage to the existing coder). Every agent prompt and coder message MUST start with `Mode: bug-fix.` so the preloaded `bug-fix` skill applies. You are forbidden from:
 
 - Reading source code, editing files, or running tests/git yourself
 - Accepting a fix whose report lacks the regression test's failing output before the fix
 - Pushing — this command only commits
 
-If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 6 (approve plan, commit).
+If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 7 (approve plan, commit).
+
+## Cost Rules
+
+- **`--lite`** (small, low-risk changes): strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
+- **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage (still prefixed `Mode: bug-fix.`) instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
+- **Full suite at most twice**: only the first test run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
 
 ## Workflow
 
@@ -37,23 +44,27 @@ Read the plan, show Summary / Symptom / Root Cause / Steps, then AskUserQuestion
 
 ### Step 3: Red → Fix → Green
 
-Agent(subagent_type: coder, prompt: "Mode: bug-fix. Implement <plan-path> red-first: write the regression test, run it and paste its failing output, and only then apply the root-cause fix and paste the passing output. If the test passes before the fix, stop without touching production code.").
+Agent(subagent_type: coder, prompt: "Mode: bug-fix. Implement <plan-path> red-first: write the regression test, run it and paste its failing output, and only then apply the root-cause fix and paste the passing output. If the test passes before the fix, stop without touching production code."). Keep its agent ID.
 
 **Fail-closed guardrail**: If the report lacks failing output before the fix, or the coder stopped because the test passed → the bug is not reproduced — report and stop.
 
-### Step 4: Full Verify (max 3 iterations)
+### Step 4: Verify (max 3 iterations)
 
-Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). On FAIL → Agent(subagent_type: coder, prompt: "Mode: bug-fix. Fix these failures for <plan-path>: <failures>") → repeat.
+First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). Every re-run is scoped (see Cost Rules). On FAIL → SendMessage to the coder: "Mode: bug-fix. Fix these failures for <plan-path>: <failures>" → repeat.
 
 ### Step 5: Review + UI Verify (max 2 iterations)
 
 Agent(subagent_type: reviewer, prompt: "Mode: bug-fix. Review changes against main. Plan file: <plan-path>."), and in the same message when triggered Agent(subagent_type: ui-verifier, prompt: "Mode: bug-fix. Verify the UI Checks of <plan-path>.").
 
-**UI verify trigger**: the plan has a `## UI Checks` section, or the coder's changed files include `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`, `*.html`, `*.css`, `*.scss`. When triggered, launch `ui-verifier` in the same message as the reviewer — both are read-only on code. `ENV_MISSING` from ui-verifier is not a failure: show what it needs and continue.
+**UI verify trigger**: the plan has a `## UI Checks` section — the planner adds one whenever the change touches web UI, so a style-only change without it does not launch a browser. When triggered, launch `ui-verifier` in the same message as the reviewer — both are read-only on code. `ENV_MISSING` from ui-verifier is not a failure: show what it needs and continue.
 
-`CHANGES_REQUESTED` or UI `FAIL` → one coder call with both lists → back to Step 4 → reviewer again with prompt: "Mode: bug-fix. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>." and ui-verifier with "Mode: bug-fix. Re-verify only these failed UI Checks of <plan-path>: <failed checks>."
+`CHANGES_REQUESTED` or UI `FAIL` → one SendMessage to the coder with both lists → back to Step 4 → reviewer again with prompt: "Mode: bug-fix. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>." and ui-verifier with "Mode: bug-fix. Re-verify only these failed UI Checks of <plan-path>: <failed checks>."
 
-### Step 6: Commit
+### Step 6: Final Gate
+
+Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` → show the failures and stop.
+
+### Step 7: Commit
 
 AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on a new `fix/<slug>` branch.").
 

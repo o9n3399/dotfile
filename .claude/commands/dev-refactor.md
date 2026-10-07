@@ -3,6 +3,7 @@ description: Behavior-preserving refactor — green baseline, small steps each k
 argument-hint: [scope and goal] [--yes]
 allowed-tools:
   - Agent
+  - SendMessage
   - AskUserQuestion
   - Read
 ---
@@ -13,13 +14,18 @@ Refactor: $ARGUMENTS
 
 ## Execution Contract (non-negotiable)
 
-Every step MUST be delegated via the Agent tool. Every planner/coder/reviewer prompt MUST start with `Mode: refactor.` so the preloaded `refactor` skill applies. You are forbidden from:
+Every step MUST be delegated via the Agent tool. Every planner/coder/reviewer prompt and coder message MUST start with `Mode: refactor.` so the preloaded `refactor` skill applies. You are forbidden from:
 
 - Reading source code, editing files, or running tests/git yourself
 - Starting implementation on a red baseline
 - Pushing — this command only commits
 
-If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 6.
+If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 7.
+
+## Cost Rules
+
+- **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage (still prefixed `Mode: refactor.`) instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
+- **Full suite only at checkpoints**: the Step 1 baseline, the first Step 4 run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
 
 ## Workflow
 
@@ -39,22 +45,26 @@ Read the plan, show Summary / Proposed Change / Behavior Contract / Steps / Risk
 
 ### Step 3: Implement
 
-Agent(subagent_type: coder, prompt: "Mode: refactor. Implement all unchecked steps of <plan-path> in order, running each step's Verify before the next.").
+Agent(subagent_type: coder, prompt: "Mode: refactor. Implement all unchecked steps of <plan-path> in order, running each step's Verify before the next."). Keep its agent ID.
 
 If the coder reports a step it had to undo → show why and stop.
 
 ### Step 4: Final Verify (max 2 fix iterations)
 
-Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite.").
+First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). Every re-run is scoped (see Cost Rules).
 - `PASS` → Step 5
-- `FAIL` → Agent(subagent_type: coder, prompt: "Mode: refactor. The refactor of <plan-path> broke these tests: <failures>. Fix the refactored code to restore the original behavior.") → repeat Step 4
+- `FAIL` → SendMessage to the coder: "Mode: refactor. The refactor of <plan-path> broke these tests: <failures>. Fix the refactored code to restore the original behavior." → repeat Step 4
 - Still `FAIL` after 2 fixes → show failures and stop
 
 ### Step 5: Review (max 2 iterations)
 
-Agent(subagent_type: reviewer, prompt: "Mode: refactor. Review changes against main for behavior changes. Plan file: <plan-path>."). `CHANGES_REQUESTED` → coder fixes → Step 4 → review again with prompt: "Mode: refactor. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."
+Agent(subagent_type: reviewer, prompt: "Mode: refactor. Review changes against main for behavior changes. Plan file: <plan-path>."). `CHANGES_REQUESTED` → SendMessage to the coder with the findings → Step 4 → review again with prompt: "Mode: refactor. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."
 
-### Step 6: Commit
+### Step 6: Final Gate
+
+Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` → show the failures and stop.
+
+### Step 7: Commit
 
 AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on a new `refactor/<slug>` branch.").
 

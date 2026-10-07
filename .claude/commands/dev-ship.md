@@ -21,6 +21,8 @@ You are forbidden from:
 
 ### Step 1: Verify
 
+Skip this step if this conversation already has a full-suite `PASS` from test-runner and no agent changed files after it — say so in the report.
+
 Use the Agent tool with subagent_type `test-runner`, prompt: Run stages: lint, typecheck, full test suite.
 
 **Fail-closed guardrail**: If the result is not `PASS`, show the failures and stop.

@@ -3,6 +3,7 @@ description: Tighten code syntax without changing behavior — modern idioms, le
 argument-hint: [path...] [--review]
 allowed-tools:
   - Agent
+  - SendMessage
   - Bash(git status *)
   - Bash(echo *)
 ---
@@ -28,13 +29,13 @@ Use the paths from the arguments if given, otherwise the changed files (strip th
 
 ### Step 2: Polish
 
-Agent(subagent_type: coder, prompt: "Mode: polish. Apply syntax-optimize to these files only: <files>.").
+Agent(subagent_type: coder, prompt: "Mode: polish. Apply syntax-optimize to these files only: <files>."). Keep its agent ID.
 
 ### Step 3: Verify (max 2 fix iterations)
 
 Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, scoped tests. Scope to: <files>.").
 - `PASS` → Step 4
-- `FAIL` → Agent(subagent_type: coder, prompt: "Mode: polish. Your rewrites broke: <failures>. Revert the offending rewrites to the original form.") → repeat
+- `FAIL` → SendMessage to the coder: "Mode: polish. Your rewrites broke: <failures>. Revert the offending rewrites to the original form." → repeat (spawn a new coder only if SendMessage fails)
 - Still `FAIL` → show failures and stop
 
 ### Step 4: Review (only with `--review`)

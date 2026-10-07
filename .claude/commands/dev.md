@@ -1,8 +1,9 @@
 ---
 description: Full workflow — plan, implement, test, review, commit — using the dev agents
-argument-hint: [task description]
+argument-hint: [task description] [--lite]
 allowed-tools:
   - Agent
+  - SendMessage
   - AskUserQuestion
   - Read
 ---
@@ -17,7 +18,13 @@ You are an orchestrator. Every step MUST be delegated via the Agent tool to its 
 
 - Reading source code, editing files, or running tests/git yourself
 - Skipping user approval of the plan (Step 2)
-- Pushing without explicit user confirmation (Step 6)
+- Pushing without explicit user confirmation (Step 7)
+
+## Cost Rules
+
+- **`--lite`** (small, low-risk changes): strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
+- **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
+- **Full suite at most twice**: only the first test run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
 
 ## Workflow
 
@@ -35,13 +42,13 @@ Read the plan file, show Summary / Proposed Change / Steps / Risks (plus the pat
 
 ### Step 3: Implement
 
-Agent(subagent_type: coder, prompt: "Implement the plan at <plan-path>").
+Agent(subagent_type: coder, prompt: "Implement the plan at <plan-path>"). Keep its agent ID.
 
 ### Step 4: Test Loop (max 3 iterations)
 
-Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite.").
+First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). Every re-run is scoped (see Cost Rules).
 - `PASS` → Step 5
-- `FAIL` → Agent(subagent_type: coder, prompt: "Fix these failures for plan <plan-path>: <failures>") → repeat Step 4
+- `FAIL` → SendMessage to the coder: "Fix these failures for plan <plan-path>: <failures>" → repeat Step 4
 - After 3 failed iterations, or `ENV_MISSING` / `NO_TESTS_DETECTED` → show the result and ask the user whether to continue
 
 ### Step 5: Review + UI Verify Loop (max 2 iterations)
@@ -49,14 +56,18 @@ Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full tes
 Agent(subagent_type: reviewer, prompt: "Review changes against main. Plan file: <plan-path>").
 In parallel when triggered: Agent(subagent_type: ui-verifier, prompt: "Verify the UI Checks of <plan-path>.").
 
-**UI verify trigger**: the plan has a `## UI Checks` section, or the coder's changed files include `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`, `*.html`, `*.css`, `*.scss`. When triggered, launch `ui-verifier` in the same message as the reviewer — both are read-only on code. `ENV_MISSING` from ui-verifier is not a failure: show what it needs and continue.
+**UI verify trigger**: the plan has a `## UI Checks` section — the planner adds one whenever the change touches web UI, so a style-only change without it does not launch a browser. When triggered, launch `ui-verifier` in the same message as the reviewer — both are read-only on code. `ENV_MISSING` from ui-verifier is not a failure: show what it needs and continue.
 
 - Reviewer `APPROVE` and ui-verifier `PASS`/`ENV_MISSING`/not triggered → Step 6
-- Otherwise → one Agent(subagent_type: coder, prompt: "Fix these findings for plan <plan-path>: <CRITICAL/HIGH review findings> <UI failures>") → back to Step 4
+- Otherwise → one SendMessage to the coder: "Fix these findings for plan <plan-path>: <CRITICAL/HIGH review findings> <UI failures>" → back to Step 4
 - Second iteration: reviewer prompt "Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."; ui-verifier prompt "Re-verify only these failed UI Checks of <plan-path>: <failed checks>."
 - Still failing after 2 iterations → show remaining findings and ask the user whether to continue
 
-### Step 6: Ship
+### Step 6: Final Gate
+
+Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` → show the failures and ask the user whether to continue.
+
+### Step 7: Ship
 
 AskUserQuestion: `Commit only`, `Commit + push + PR`, `Stop (leave uncommitted)`.
 Then Agent(subagent_type: git-agent):
