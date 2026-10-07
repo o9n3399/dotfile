@@ -38,7 +38,7 @@ Follow the preloaded `plan-execution`, `code-convention` and `syntax-optimize` s
 
 ### Step 3: Report
 
-Return to the caller:
+Return only the following, one line per item — no code excerpts or narration:
 - Files changed (path + one-line reason)
 - Steps completed / remaining
 - Deviations from the plan and why

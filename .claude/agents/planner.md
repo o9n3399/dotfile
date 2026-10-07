@@ -54,7 +54,7 @@ Write the plan following the preloaded `plan-format` skill to `.dev-plan/<kebab-
 
 ### Step 3: Report
 
-Return to the caller:
+Return only the following — no exploration narrative, the plan file holds the details:
 - Plan file path
 - The plan's Summary
 - Open questions that block implementation, each with 2–3 candidate answers (or "none")
