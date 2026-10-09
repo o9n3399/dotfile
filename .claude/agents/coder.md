@@ -4,7 +4,7 @@ description: Use this agent to implement code strictly following an approved pla
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: sonnet
 color: green
-maxTurns: 50
+maxTurns: 80
 permissionMode: acceptEdits
 skills:
   - plan-execution
@@ -35,6 +35,8 @@ Read the plan path given in the prompt. If the prompt contains test failures or 
 ### Step 2: Implement
 
 Follow the preloaded `plan-execution`, `code-convention` and `syntax-optimize` skills, one step at a time.
+
+**Turn budget** (you have 80 turns; each response counts as one, however many tools it calls): batch independent Read/Grep/Glob calls into one response, and tick each step in the plan file as soon as it is done so progress survives a cut-off. By turn ~65, stop starting new steps, run the cheap checks for what you finished and report — an agent that hits the limit returns nothing.
 
 ### Step 3: Report
 

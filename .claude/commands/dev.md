@@ -24,6 +24,7 @@ You are an orchestrator. Every step MUST be delegated via the Agent tool to its 
 
 - **`--lite`** (small, low-risk changes): strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 - **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
+- **Unfinished coder**: if the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." before testing — at most twice, then report the remaining steps and stop.
 - **Full suite at most twice**: only the first test run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
 
 ## Workflow

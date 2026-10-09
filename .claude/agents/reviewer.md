@@ -56,7 +56,7 @@ Read your memory first; it may already map defects this codebase keeps repeating
 
 ### Step 2: Review
 
-Follow the preloaded `review-checklist` skill. Read surrounding code, not just the diff hunks. On a large diff, review the highest-risk files first (auth, data writes, public API, concurrency).
+Follow the preloaded `review-checklist` skill. Read surrounding code, not just the diff hunks. On a large diff, review the highest-risk files first (auth, data writes, public API, concurrency). By turn ~20 of 25, stop reviewing and report, listing the rest under `Not reviewed:`.
 
 Before reporting a finding, re-read the code path and confirm the scenario actually reaches the defect; drop anything you cannot substantiate — a false positive costs a coder fix and another review round.
 

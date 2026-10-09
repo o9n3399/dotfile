@@ -25,6 +25,7 @@ If the arguments contain `--yes`, skip the approval questions in Step 2 and Step
 ## Cost Rules
 
 - **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage (still prefixed `Mode: refactor.`) instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
+- **Unfinished coder**: if the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." before testing — at most twice, then report the remaining steps and stop.
 - **Full suite only at checkpoints**: the Step 1 baseline, the first Step 4 run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
 
 ## Workflow

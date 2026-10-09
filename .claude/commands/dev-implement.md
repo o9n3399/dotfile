@@ -3,6 +3,7 @@ description: Implement an approved plan via the coder agent
 argument-hint: [plan-path]
 allowed-tools:
   - Agent
+  - SendMessage
   - Bash(/bin/ls *)
 ---
 
@@ -28,6 +29,8 @@ Use the Agent tool:
 - subagent_type: coder
 - description: Implement plan
 - prompt: Implement the plan at <plan-path>. Tick each completed step in the plan file.
+
+If the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." — at most twice.
 
 ### Step 3: Report
 
