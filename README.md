@@ -33,11 +33,17 @@ rsync -a --exclude mcp.json ~/dotfile/.claude/ ~/.claude/
 jq -c '.mcpServers | to_entries[]' ~/dotfile/.claude/mcp.json | while read -r e; do
   claude mcp add-json --scope user "$(jq -r .key <<<"$e")" "$(jq -c .value <<<"$e")"
 done
+jq -r '.extraKnownMarketplaces // {} | .[].source.repo' ~/.claude/settings.json | xargs -rn1 claude plugin marketplace add
+jq -r '.enabledPlugins // {} | keys[]' ~/.claude/settings.json | xargs -rn1 claude plugin install
 ```
 
 Refresh the snapshot after changing the live config:
 
 ```sh
-rsync -a --delete --exclude 'synced/' --exclude '__pycache__/' ~/.claude/{CLAUDE.md,settings.json,commands,agents,skills,hooks} ~/dotfile/.claude/
+rsync -a --delete --exclude 'synced/' --exclude '.trash/' --exclude '__pycache__/' --exclude 'skills/.archive/' \
+  --exclude-from=<(find ~/.claude/skills -name .ledger.jsonl -printf '%h/\n' | sed "s|^$HOME/.claude/||") \
+  ~/.claude/{CLAUDE.md,settings.json,commands,agents,skills,hooks} ~/dotfile/.claude/
 jq '{mcpServers}' ~/.claude.json > ~/dotfile/.claude/mcp.json
 ```
+
+Skills learned by the autoharness plugin (any skill dir holding a `.ledger.jsonl`, plus `skills/.archive/`) are machine-local and stay out of the snapshot.

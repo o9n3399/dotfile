@@ -13,14 +13,23 @@
     "command": "input=$(cat); dir=$(printf '%s' \"$input\" | jq -r '.workspace.current_dir // .cwd'); model=$(printf '%s' \"$input\" | jq -r '.model.display_name'); short=${dir/#$HOME/\\~}; git_info=''; if branch=$(git -C \"$dir\" symbolic-ref --short HEAD 2>/dev/null); then dirty=''; git -C \"$dir\" diff --quiet --ignore-submodules HEAD 2>/dev/null && git diff --cached --quiet 2>/dev/null || dirty='*'; ab=''; counts=$(git -C \"$dir\" rev-list --left-right --count @{upstream}...HEAD 2>/dev/null); if [ -n \"$counts\" ]; then behind=$(printf '%s' \"$counts\" | cut -f1); ahead=$(printf '%s' \"$counts\" | cut -f2); [ \"$behind\" -gt 0 ] 2>/dev/null && ab=\"${ab}⇣\"; [ \"$ahead\" -gt 0 ] 2>/dev/null && ab=\"${ab}⇡\"; fi; git_info=$(printf ' \\033[90m %s%s \\033[36m%s\\033[0m' \"$branch\" \"$dirty\" \"$ab\"); fi; printf '\\033[34m%s\\033[0m%s \\033[35m%s\\033[0m' \"$short\" \"$git_info\" \"$model\"",
     "padding": 0
   },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "autoharness@autoharness": true
+  },
+  "extraKnownMarketplaces": {
+    "autoharness": {
+      "source": {
+        "source": "github",
+        "repo": "tigerless-labs/autoharness"
+      }
+    }
+  },
   "language": "vietnam",
   "autoCompactWindow": 180000,
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
-  }
+  "voiceEnabled": true
 }
