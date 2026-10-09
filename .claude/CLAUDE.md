@@ -26,3 +26,4 @@
 ## Git
 
 - Never push after committing unless explicitly asked
+- Before committing, check git status and stage only intended files — never add a whole directory blindly
