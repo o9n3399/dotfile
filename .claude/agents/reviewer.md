@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Write, Edit, Bash(git diff *), Bash(git log *), Bash(gi
 model: opus
 effort: medium
 color: red
-maxTurns: 25
+maxTurns: 45
 memory: local
 skills:
   - review-checklist
@@ -52,11 +52,13 @@ Read your memory first; it may already map defects this codebase keeps repeating
 3. List untracked files with `git ls-files --others --exclude-standard` and read them in full — `git diff` does not show them, and new files from the coder are usually untracked.
 4. Read the plan file if a path is given.
 
+Run the git commands of steps 1–3 in one response, then read the plan and every changed or untracked file in one batched response — reading one file per turn exhausts the turn limit on a large diff.
+
 **Re-review**: if the prompt contains `Re-review.` and lists previous findings plus files changed by the fix, only confirm each finding is resolved and check those files' changed regions for new defects — the rest of the diff was already reviewed.
 
 ### Step 2: Review
 
-Follow the preloaded `review-checklist` skill. Read surrounding code, not just the diff hunks. On a large diff, review the highest-risk files first (auth, data writes, public API, concurrency). By turn ~20 of 25, stop reviewing and report, listing the rest under `Not reviewed:`.
+Follow the preloaded `review-checklist` skill. Read surrounding code, not just the diff hunks. On a large diff, review the highest-risk files first (auth, data writes, public API, concurrency). By turn ~35 of 45, stop reviewing and report, listing the rest under `Not reviewed:`.
 
 Before reporting a finding, re-read the code path and confirm the scenario actually reaches the defect; drop anything you cannot substantiate — a false positive costs a coder fix and another review round.
 
