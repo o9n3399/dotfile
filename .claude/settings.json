@@ -31,5 +31,10 @@
   "skipDangerousModePermissionPrompt": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "permissions": {
+    "allow": [
+      "Bash(docker exec postgres_db psql:*)"
+    ]
+  }
 }
