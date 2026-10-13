@@ -21,6 +21,12 @@ Define how an implementation plan is written (planner) and read (reviewer).
 7. List every affected file with a one-line reason. Mark new files with `(new)`.
 8. **UI Checks** only when the change touches web UI: one line per affected screen — route, the interaction, and the visible result a user would expect. Include the screens that reuse a changed component, not just the one in the task. In bug-fix mode, the first check replays the symptom's scenario and expects the fixed behavior.
 9. Keep it short: a plan a human can approve in under 2 minutes.
+10. **Line layout** — the plan is reviewed in split panes ~110 columns wide:
+    - One sentence per line; break a long sentence at a comma, `→` or before a clause. Markdown still renders one paragraph, and diffs show only the edited sentence.
+    - Max 100 characters per line. Indent a bullet's continuation 2 spaces under its text. Never break inside inline code, a link or `file:line`; a line holding only one long path or URL may exceed the limit.
+    - A list of 3+ items becomes nested bullets, not a comma- or slash-joined line.
+    - Tables only for short comparisons: cells ≤ ~50 characters, rows ≤ ~120. Longer content goes under a `### <Area>` heading as `- Current:` / `- Proposed:` bullets.
+    - Status, dependency and related-plan notes are a bullet list, one item per line — never one long `>` line.
 
 ## Expected Output
 

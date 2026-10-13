@@ -19,6 +19,13 @@
 |------|---------|----------|
 | <behavior or module> | <today> | <after this change> |
 
+<when a row would not fit ~120 characters, drop the table and use one block per area:>
+
+### <Area>
+
+- Current: <today>
+- Proposed: <after this change>
+
 Alternatives considered: <only if a real one exists — why rejected>
 
 ## Affected Files
