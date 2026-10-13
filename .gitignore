@@ -2,3 +2,4 @@
 .config/nvim/plugin/packer_compiled.lua
 .config/nvim/lazy-lock.json
 **/autoharness/
+.claude/skills/claude-config-sync/
