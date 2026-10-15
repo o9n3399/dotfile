@@ -35,6 +35,8 @@ Use the Agent tool with subagent_type `git-agent`, prompt: Commit the current ch
 
 Use AskUserQuestion: "Push and open a PR against <base>?" with options `Push + PR`, `Push only`, `Stop here`.
 
+If Step 2 reported `Pulled: <n> new commits` with n > 0, say so in the question — the pulled code was not covered by the Step 1 checks.
+
 ### Step 4: Ship
 
 If confirmed, use the Agent tool with subagent_type `git-agent`, prompt: `ALLOW_PUSH=true` Push the current branch. Add `OPEN_PR=true` and "base branch: <base>" only if the user chose `Push + PR`.

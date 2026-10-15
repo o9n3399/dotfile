@@ -39,7 +39,7 @@ Run `git status` and `git diff` to understand the changes and current branch.
 
 ### Step 2: Pull
 
-Before committing, sync with the remote: if the current branch has an upstream, run `git pull --rebase --autostash`. If you are on `main`/`master` and will branch off, pull it first so the new branch starts from the latest remote.
+Before committing, sync with the remote: if the current branch has an upstream (`git rev-parse --abbrev-ref @{u}` succeeds), run `git pull --rebase --autostash`. If you are on `main`/`master` and will branch off, pull it first so the new branch starts from the latest remote.
 
 ### Step 3: Commit
 
@@ -51,6 +51,6 @@ Run `git pull --rebase origin <branch>` first if the branch exists on the remote
 
 ### Step 5: Report
 
-Return commits created (short hash + message), branch, and PR URL if any.
+Return commits created (short hash + message), branch, PR URL if any, and `Pulled: <n> new commits | up to date | no upstream` for each pull.
 
-**Fail-closed guardrail**: On merge or rebase conflict (including a failed autostash pop), rejected push, or failed hook, stop and report the exact error. Do not retry with force or `--no-verify`.
+**Fail-closed guardrail**: On merge or rebase conflict (including a failed autostash pop), rejected push, or failed hook, stop and report the exact error. On a rebase conflict, first run `git rebase --abort` so the repo returns to its pre-pull state. Do not retry with force or `--no-verify`.
