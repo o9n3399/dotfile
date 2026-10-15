@@ -37,16 +37,20 @@ You are forbidden from:
 
 Run `git status` and `git diff` to understand the changes and current branch.
 
-### Step 2: Commit
+### Step 2: Pull
+
+Before committing, sync with the remote: if the current branch has an upstream, run `git pull --rebase --autostash`. If you are on `main`/`master` and will branch off, pull it first so the new branch starts from the latest remote.
+
+### Step 3: Commit
 
 Follow the preloaded `commit-convention` skill.
 
-### Step 3: Push & PR (only with `ALLOW_PUSH=true`)
+### Step 4: Push & PR (only with `ALLOW_PUSH=true`)
 
-Push with `git push -u origin <branch>`, then open a PR with `gh pr create` following the `pr-template` skill — only if the prompt also contains `OPEN_PR=true`.
+Run `git pull --rebase origin <branch>` first if the branch exists on the remote, then push with `git push -u origin <branch>`, then open a PR with `gh pr create` following the `pr-template` skill — only if the prompt also contains `OPEN_PR=true`.
 
-### Step 4: Report
+### Step 5: Report
 
 Return commits created (short hash + message), branch, and PR URL if any.
 
-**Fail-closed guardrail**: On merge conflict, rejected push, or failed hook, stop and report the exact error. Do not retry with force or `--no-verify`.
+**Fail-closed guardrail**: On merge or rebase conflict (including a failed autostash pop), rejected push, or failed hook, stop and report the exact error. Do not retry with force or `--no-verify`.
