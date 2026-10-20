@@ -48,6 +48,8 @@ Read the project's `CLAUDE.md` (if any), then locate every file the task touches
 - Only when memory and that Grep can't answer it — the task needs understanding inside 3+ services/packages — spawn one `Explore` agent per service in a single response (at most 8). Each gets the task context, its directory and a precise question, e.g. "Task: unify currency units. In `order-service/`, list every file:line that reads or converts currency units and how; thoroughness: medium". Explore agents run in the background: never write the plan or end your turn until every one has returned its result. Treat answers as leads: read yourself every file you will modify, and mark claims you didn't read as `(unverified)`.
 - By turn ~40, stop exploring and write the plan; list anything not verified under Open Questions or Risks as `(unverified)`.
 
+If the task merges or replaces an API, grep every client (web, mobile, export) for the fields it reads from the old response — they fill the plan's `## API Contract`.
+
 ### Step 2: Write Plan
 
 Write the plan following the preloaded `plan-format` skill to `.dev-plan/<kebab-case-slug>.md`.

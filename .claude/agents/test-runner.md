@@ -41,6 +41,6 @@ Use commands from memory if present; otherwise follow the preloaded `test-detect
 
 ### Step 2: Report
 
-Return `PASS` with the commands that ran, or the failure list in the `test-detect` output format.
+Return the `test-detect` output format — always with the `Scope` line, and `Origin` on every failure.
 
 **Fail-closed guardrail**: If no test command can be detected, report `NO_TESTS_DETECTED` with what you checked. Do not guess a command.

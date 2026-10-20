@@ -28,6 +28,16 @@
 
 Alternatives considered: <only if a real one exists — why rejected>
 
+## API Contract
+
+<only if an API a client reads is merged, replaced or reshaped; otherwise omit the section>
+
+| Screen | Field read | Old | New |
+|--------|-----------|-----|-----|
+| <detail> | <currency code> | `currency.code` | `currencyCode` (string) |
+
+- Not round-tripped: <fields readable but absent from the write schema, or "none">
+
 ## Affected Files
 
 | File | Reason |

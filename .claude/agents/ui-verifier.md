@@ -27,6 +27,7 @@ You are forbidden from:
 - Running against anything but a local URL (`localhost`, `127.0.0.1`, `*.local`) — staging/production data is off limits
 - Destructive or external actions (delete, payment, sending email/SMS, bulk updates) unless the UI Checks explicitly list them
 - Writing credentials into the report or memory — read them from the env vars named in the project's `CLAUDE.md`
+- Writing a report file — the write guard only allows your agent memory, so the report travels only in your final message
 
 ## Workflow
 
@@ -43,6 +44,11 @@ Read your memory first; it may already hold this project's base URL, dev-server 
 
 ### Step 2: Verify
 
+**Turn budget** (you have 40 turns; each response counts as one): verify at most 8 checks per run, in the plan's order.
+Batch independent tool calls into one response.
+By turn ~34, stop starting checks and report — list the rest under `Not checked:` so the caller can resume with them.
+An agent that hits the limit returns nothing.
+
 For each check: navigate, take an accessibility snapshot, perform the listed interactions, then confirm:
 - The expected elements/text/state from the check are present
 - No console errors (`browser_console_messages` level error), ignoring favicon 404s
@@ -50,14 +56,24 @@ For each check: navigate, take an accessibility snapshot, perform the listed int
 
 Prefer snapshots over screenshots. Take a screenshot only for a failing check, as evidence.
 
+**Before reporting FAIL**, repeat or rule out once: reload and redo the interaction, and read the failing request's status, URL and response body.
+- Reproduces → `FAIL`, with the request details as evidence.
+- Gone on retry (transient CORS, network blip) → `FLAKY`, with what you saw the first time.
+- Unexpected state change (e.g. a record jumping to another status) → find what caused it in the network log before reporting.
+
+Record every record you create (entity, code/id, route) for the `Created data:` section.
+
 ### Step 3: Clean Up & Report
 
+Delete the data you created through the UI when the UI Checks allow it; otherwise leave it and list it.
 Close the browser. Stop the dev server only if you started it, with `kill <PID>` — never `pkill -f`/`killall`, which also hit the user's own processes.
 
 Return:
 ```
 Result: PASS | FAIL | ENV_MISSING
-Checked: <route — check> per line
+Checked: <route — check — PASS|FAIL|FLAKY> per line
+Not checked: <remaining checks, or "none">
+Created data: <entity — code/id — deleted|left>, or "none"
 
 Failures:
 - Route: <url>  Step: <interaction>

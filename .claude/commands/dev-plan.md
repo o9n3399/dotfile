@@ -17,6 +17,11 @@ You MUST delegate planning to the `planner` subagent. Do not explore the codebas
 
 ## Workflow
 
+### Step 0: Check Task
+
+The task is only the text after `Task:` above — never a task from earlier in the conversation, memory or an old plan.
+If it is empty, ask the user for it with AskUserQuestion and stop until they answer.
+
 ### Step 1: Invoke Planner
 
 Use the Agent tool:
