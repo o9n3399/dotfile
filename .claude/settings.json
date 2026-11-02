@@ -7,7 +7,12 @@
     "pr": "",
     "sessionUrl": false
   },
-  "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash(docker exec postgres_db psql:*)"
+    ]
+  },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "input=$(cat); dir=$(printf '%s' \"$input\" | jq -r '.workspace.current_dir // .cwd'); model=$(printf '%s' \"$input\" | jq -r '.model.display_name'); short=${dir/#$HOME/\\~}; git_info=''; if branch=$(git -C \"$dir\" symbolic-ref --short HEAD 2>/dev/null); then dirty=''; git -C \"$dir\" diff --quiet --ignore-submodules HEAD 2>/dev/null && git diff --cached --quiet 2>/dev/null || dirty='*'; ab=''; counts=$(git -C \"$dir\" rev-list --left-right --count @{upstream}...HEAD 2>/dev/null); if [ -n \"$counts\" ]; then behind=$(printf '%s' \"$counts\" | cut -f1); ahead=$(printf '%s' \"$counts\" | cut -f2); [ \"$behind\" -gt 0 ] 2>/dev/null && ab=\"${ab}⇣\"; [ \"$ahead\" -gt 0 ] 2>/dev/null && ab=\"${ab}⇡\"; fi; git_info=$(printf ' \\033[90m %s%s \\033[36m%s\\033[0m' \"$branch\" \"$dirty\" \"$ab\"); fi; printf '\\033[34m%s\\033[0m%s \\033[35m%s\\033[0m' \"$short\" \"$git_info\" \"$model\"",
@@ -15,7 +20,8 @@
   },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
-    "autoharness@autoharness": true
+    "autoharness@autoharness": true,
+    "postman@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "autoharness": {
@@ -31,10 +37,33 @@
   "skipDangerousModePermissionPrompt": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "permissions": {
-    "allow": [
-      "Bash(docker exec postgres_db psql:*)"
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Not queryable — no git remotes found in this repo (/home/nouven, 0 tracked files, no origin). Treat as an untracked/local-only working directory; assume private until a remote is added",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: Not queryable — no git remotes, no default branch set (origin/HEAD unset)",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: No remotes configured for this repo — no additional orgs configured",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: any file or store holding personal data, confidential business data, credentials, regulated data, or similarly sensitive material; preserve exact handles when known and share only with audiences cleared at the [named+specifics] bar. Note: home directory scan found numerous .env files and credential-looking paths (e.g. .claude/credentials.json, .config/gogcli/credentials.json, .secrets/google/client_secret_*.json, script/database/.env, script/glab/.env, script/postgres/.env, code/*/.env, data/tst/prod/*.sql* dumps) — these are outside this repo (/home/nouven has 0 tracked files) and are listed here only as locations to treat as sensitive if encountered, not as confirmed project data",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment (hyphen/underscore/dot-delimited). Note: filename scan shows a `data/tst/prod/` directory tree with many `tst_prod_*` dump/SQL files under the home directory — treat paths under that `prod/` segment as sensitive remote-target-adjacent data if encountered",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development",
+      "**Trusted repo**: /home/nouven has no git remotes and 0 tracked files — there is no established trusted repo for this working directory; treat it as untrusted/unestablished until a remote is configured",
+      "**Org-specific CLIs**: None configured"
     ]
-  }
+  },
+  "voiceEnabled": true
 }

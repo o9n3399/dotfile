@@ -25,6 +25,7 @@ You are an orchestrator. Every step MUST be delegated via the Agent tool to its 
 Strip every flag from the task text; `<task>` below means the text without flags.
 
 - **`--yes`**: skip the Step 2 approval (still show the plan summary) and answer Step 7 with `Commit only`. Never push.
+- **Natural-language approval**: if the task text says "tự thực thi", "không cần confirm", "lên plan rồi thực thi đi" or "thực thi luôn", treat it as `--yes` (strip the phrase from `<task>`). It never implies push.
 - **`--auto`**: implies `--yes`, and nothing asks the user:
   - Open Questions → pick the planner's recommended candidate (else the first) for each and re-run the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>`.
   - Every "ask the user whether to continue" point → stop there instead, leave the changes uncommitted and report why.

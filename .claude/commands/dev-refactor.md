@@ -67,7 +67,7 @@ Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test
 
 ### Step 7: Commit
 
-AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on a new `refactor/<slug>` branch.").
+AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on the repo's default branch per `commit-convention` (`develop` for services, `staging` for web; a `refactor/<slug>` branch only if the user asked).").
 
 ## Output Summary
 

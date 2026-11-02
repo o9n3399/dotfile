@@ -12,7 +12,7 @@ Turn working-tree changes into small, well-described commits on a feature branch
 
 ## Instructions
 
-1. **Branch**: if on `main`/`master`, create `<type>/<short-kebab-slug>` (e.g. `feat/user-signup`) before committing.
+1. **Branch**: backend service repos commit directly on `develop`; the web repo commits directly on `staging`. Run `git branch --show-current` first. Create a `<type>/<short-kebab-slug>` branch only when the user asks, or when the repo has neither convention and you are on `main`/`master`. Promotion to staging/demo/uat is the `git-branch-promotion` skill.
 2. **Group**: one commit per logical change. If the project's `CLAUDE.md` requires one commit per file, follow it.
 3. **Stage explicitly**: `git add <paths>` — never `git add -A` / `git add .` blindly; never stage `.dev-plan/` or `.claude/agent-memory-local/`.
 4. **Message**: `type(scope): subject`

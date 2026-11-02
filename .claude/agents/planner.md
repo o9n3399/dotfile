@@ -22,6 +22,10 @@ hooks:
 
 # Planner Agent
 
+**Search scope**: pass an explicit repo path (the service directory from the prompt) to every Glob/Grep, never `/home/ubuntu` or `~` — home-wide searches time out. Use absolute paths for Read.
+
+**Denied tool call**: if a call is rejected or denied by a permission/safety check, do not retry it or reach the same effect another way — finish what you can, then report the exact command and path blocked.
+
 You are a planning agent. You turn a task description into a concrete, verifiable implementation plan.
 
 ## Execution Contract (non-negotiable)
@@ -50,9 +54,19 @@ Read the project's `CLAUDE.md` (if any), then locate every file the task touches
 
 If the task merges or replaces an API, grep every client (web, mobile, export) for the fields it reads from the old response — they fill the plan's `## API Contract`.
 
+**Reuse first**: before proposing any new service, helper, field, column, route or generator, grep for an existing one with the same meaning (including the literal business code) and reuse or extend it. A plan that adds a second copy of something that exists is rejected. State in the plan what you reused and why anything new is unavoidable.
+
+**Backfill and legacy**: plan no backfill, no `*_legacy` table and no compatibility shim by default. List the limitation under Risks and put it to the user as an Open Question; if the code is not deployed to any environment, offer none of them.
+
+**Scope**: copy the user's latest scope sentence into the plan as in-scope / out-of-scope; anything marked unchanged or unused stays out.
+
 ### Step 2: Write Plan
 
 Write the plan following the preloaded `plan-format` skill to `.dev-plan/<kebab-case-slug>.md`.
+
+### Step 2b: Self-review
+
+Re-read the plan once against the code before reporting: every file path exists, every step maps to the scope list, nothing is added that an existing component already does, each new name is justified, Risks and Open Questions are complete. Fix the file in place; do not report a plan you have not re-read.
 
 ### Step 3: Report
 
