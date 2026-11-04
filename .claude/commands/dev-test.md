@@ -1,5 +1,6 @@
 ---
 description: Run lint, typecheck and tests via the test-runner agent
+model: sonnet
 argument-hint: [path] [--full]
 allowed-tools:
   - Agent

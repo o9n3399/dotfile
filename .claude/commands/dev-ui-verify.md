@@ -1,5 +1,6 @@
 ---
 description: Verify web screens in a real browser via the ui-verifier agent (Playwright MCP)
+model: sonnet
 argument-hint: [route... | plan-path]
 allowed-tools:
   - Agent

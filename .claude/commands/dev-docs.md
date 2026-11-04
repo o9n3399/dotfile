@@ -1,5 +1,6 @@
 ---
 description: Write or update developer docs for the repo's services via parallel doc-writer agents, then refresh the service index
+model: sonnet
 argument-hint: [service...] [--all]
 allowed-tools:
   - Agent

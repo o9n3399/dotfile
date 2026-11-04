@@ -1,5 +1,6 @@
 ---
 description: Verify, commit, then push and open a PR after user confirmation
+model: sonnet
 argument-hint: [base-branch]
 allowed-tools:
   - Agent

@@ -1,6 +1,6 @@
 ---
 description: Behavior-preserving refactor — green baseline, small steps each kept green, review, commit
-argument-hint: [scope and goal] [--yes]
+argument-hint: [scope and goal] [--yes] [--lite]
 allowed-tools:
   - Agent
   - SendMessage
@@ -21,6 +21,8 @@ Every step MUST be delegated via the Agent tool. Every planner/coder/reviewer pr
 - Pushing — this command only commits
 
 If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 7.
+
+If the arguments contain `--lite` (small, low-risk refactors), strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 
 ## Cost Rules
 

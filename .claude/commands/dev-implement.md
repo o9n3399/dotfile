@@ -1,5 +1,6 @@
 ---
 description: Implement an approved plan via the coder agent
+model: sonnet
 argument-hint: [plan-path]
 allowed-tools:
   - Agent

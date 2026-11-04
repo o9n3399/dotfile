@@ -1,5 +1,6 @@
 ---
 description: Commit current changes via the git-agent (no push)
+model: sonnet
 argument-hint: [hint for scope or message]
 allowed-tools:
   - Agent

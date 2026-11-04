@@ -1,5 +1,6 @@
 ---
 description: Research a technology choice against the current stack via the researcher agent — cited report in .dev-plan/research/
+model: sonnet
 argument-hint: [question] [--deep]
 allowed-tools:
   - Agent

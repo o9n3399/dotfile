@@ -1,5 +1,6 @@
 ---
 description: Explore the codebase and write an implementation plan via the planner agent
+model: sonnet
 argument-hint: [task description]
 allowed-tools:
   - Agent

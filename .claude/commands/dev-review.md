@@ -1,5 +1,6 @@
 ---
 description: Review current changes via the reviewer agent
+model: sonnet
 argument-hint: [base-branch]
 allowed-tools:
   - Agent

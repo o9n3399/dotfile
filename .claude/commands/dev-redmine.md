@@ -40,7 +40,7 @@ Run Steps 1–8 for issue 1, then for issue 2, and so on. An issue that stops (b
 
 ### Step 1: Read the issue
 
-Agent(subagent_type: general-purpose, prompt: "Read Redmine issue <id> with `GET /issues/<id>.json?include=journals,attachments,children,relations` (URL and API key are in the project CLAUDE.md, header `X-Redmine-API-Key` only). Download image attachments you need to look at into the scratchpad. Return: subject, tracker, status, author id and name, assignee, description, the latest journals that change the requirement, attachments (name + what the mock-up or screenshot shows), related issues, and the service(s) the text points at. Do not change the issue.").
+Agent(subagent_type: general-purpose, model: sonnet, prompt: "Read Redmine issue <id> with `GET /issues/<id>.json?include=journals,attachments,children,relations` (URL and API key are in the project CLAUDE.md, header `X-Redmine-API-Key` only). Download image attachments you need to look at into the scratchpad. Return: subject, tracker, status, author id and name, assignee, description, the latest journals that change the requirement, attachments (name + what the mock-up or screenshot shows), related issues, and the service(s) the text points at. Do not change the issue.").
 
 **Fail-closed guardrail**: issue not found, `Closed`, or already `Resolved` → skip it and stop the batch for the user to decide. Never put the API key in a prompt that gets echoed into a plan file.
 
@@ -84,7 +84,7 @@ Skip for the web repo (it already committed on `staging`).
 
 Under `--push` go straight to the push; otherwise AskUserQuestion: `Push + resolve`, `Push only`, `Stop here (commit stays local)`.
 
-On a push answer, per backend repo, Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Skill git-branch-promotion applies. Push `develop` (plain push). Then cherry-pick <sha> onto a temporary worktree of `origin/staging` (never merge develop into staging, never checkout staging in the live tree). If the cherry-pick conflicts, abort it and report. Report the worktree path and the new staging sha, but do not push staging yet."). Then Agent(subagent_type: test-runner, prompt: "Run stages: typecheck, scoped tests on the cherry-picked worktree <path>. Scope to: <files of the commit>.") — `FAIL` → stop the batch, leave the worktree unpushed. `PASS` → Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push the worktree HEAD to origin/staging (plain push, never forced), then remove and prune the worktree.").
+On a push answer, per backend repo, Agent(subagent_type: git-agent, model: sonnet, prompt: "ALLOW_PUSH=true Skill git-branch-promotion applies. Push `develop` (plain push). Then cherry-pick <sha> onto a temporary worktree of `origin/staging` (never merge develop into staging, never checkout staging in the live tree). If the cherry-pick conflicts, abort it and report. Report the worktree path and the new staging sha, but do not push staging yet."). Then Agent(subagent_type: test-runner, prompt: "Run stages: typecheck, scoped tests on the cherry-picked worktree <path>. Scope to: <files of the commit>.") — `FAIL` → stop the batch, leave the worktree unpushed. `PASS` → Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push the worktree HEAD to origin/staging (plain push, never forced), then remove and prune the worktree.").
 
 Web: Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push `staging` (plain push).").
 
@@ -92,7 +92,7 @@ Web: Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push `staging` (pl
 
 ### Step 8: Resolve on Redmine
 
-Only after Step 7 pushed both develop and staging. Agent(subagent_type: general-purpose, prompt: "Follow the redmine-resolve skill for issue <id>: status Resolved, assign back to the author, fill root cause category/process, root cause analysis and correct actions from the plan and commit shas, set due_date if empty, add a note in Vietnamese with root cause, action, commit shas per repo and how it was verified. Never put the API key, passwords or internal hostnames in the note. Read the issue again afterwards and report status, assignee and the four fields.").
+Only after Step 7 pushed both develop and staging. Agent(subagent_type: general-purpose, model: sonnet, prompt: "Follow the redmine-resolve skill for issue <id>: status Resolved, assign back to the author, fill root cause category/process, root cause analysis and correct actions from the plan and commit shas, set due_date if empty, add a note in Vietnamese with root cause, action, commit shas per repo and how it was verified. Never put the API key, passwords or internal hostnames in the note. Read the issue again afterwards and report status, assignee and the four fields.").
 
 A failed PUT (422 etc.) → one retry with the missing fields, then report the error and continue; the code is already pushed.
 
