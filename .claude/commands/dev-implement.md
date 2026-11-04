@@ -8,6 +8,7 @@ allowed-tools:
   - Bash(/bin/ls *)
   - Bash(grep *)
   - Bash(git rev-parse *)
+  - Bash(pwd)
 ---
 
 # Dev Implement Command
@@ -22,7 +23,7 @@ You MUST delegate implementation to the `coder` subagent. Do not edit code yours
 
 - Argument: `$ARGUMENTS`
 - Latest plan: !`/bin/ls -t .dev-plan/ 2>/dev/null | grep -m1 '\.md$'` (a file name inside `.dev-plan/`)
-- Project root: !`git rev-parse --show-toplevel 2>/dev/null`
+- Project root: !`git rev-parse --show-toplevel 2>/dev/null || pwd`
 
 Use the argument if given, otherwise `.dev-plan/<latest plan>`.
 A bare `.dev-plan/*.md` glob errors with `no matches found` on zsh — never use it.

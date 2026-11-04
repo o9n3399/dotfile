@@ -89,6 +89,10 @@ Agent(subagent_type: ui-verifier, prompt: "Verify the UI Checks of <plan-path>."
 
 Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` with `NEW` failures → show them and ask the user whether to continue.
 
+### Docs Update
+
+Only when the plan changes behavior, a rule, an endpoint, config, the data model or an error key of a service (skip pure typo, style or test-only changes). Agent(subagent_type: doc-writer, prompt: "Mode: topic. Service: `<dir of each repo in the plan>`. Topic: derive it from <plan-path> and the existing `docs/*.md`. Plan: <plan-path>. Update the docs in place per the feature-docs skill; if no doc update is needed report `no doc change needed`."). Add the files it reports to the commit file list. Runs before the commit so docs ship in the same commit; the writer edits Markdown only and never commits.
+
 ### Step 7: Ship
 
 Under `--yes`/`--auto`, use `Commit only` without asking. Otherwise AskUserQuestion: `Commit only`, `Commit + push + PR`, `Stop (leave uncommitted)`.

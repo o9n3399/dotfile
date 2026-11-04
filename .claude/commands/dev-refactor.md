@@ -65,6 +65,10 @@ Agent(subagent_type: reviewer, prompt: "Mode: refactor. Review changes against m
 
 Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` → show the failures and stop.
 
+### Docs Update
+
+Only when the refactor moved or renamed files, components or endpoints that the service docs reference (update paths and links; no behavior text changes). Agent(subagent_type: doc-writer, prompt: "Mode: topic. Service: `<dir of each repo in the plan>`. Topic: derive it from <plan-path> and the existing `docs/*.md`. Plan: <plan-path>. Update the docs in place per the feature-docs skill; if no doc update is needed report `no doc change needed`."). Add the files it reports to the commit file list. Runs before the commit so docs ship in the same commit; the writer edits Markdown only and never commits.
+
 ### Step 7: Commit
 
 AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on the repo's default branch per `commit-convention` (`develop` for services, `staging` for web; a `refactor/<slug>` branch only if the user asked).").

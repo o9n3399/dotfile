@@ -65,6 +65,10 @@ Agent(subagent_type: reviewer, prompt: "Mode: bug-fix. Review changes against ma
 
 Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` → show the failures and stop.
 
+### Docs Update
+
+Only when the fix changes a rule or behavior that a `docs/*.md`, `CLAUDE.md` or `README.md` of the service states. Agent(subagent_type: doc-writer, prompt: "Mode: topic. Service: `<dir of each repo in the plan>`. Topic: derive it from <plan-path> and the existing `docs/*.md`. Plan: <plan-path>. Update the docs in place per the feature-docs skill; if no doc update is needed report `no doc change needed`."). Add the files it reports to the commit file list. Runs before the commit so docs ship in the same commit; the writer edits Markdown only and never commits.
+
 ### Step 7: Commit
 
 AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the repo's default branch per `commit-convention` (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked).").

@@ -68,9 +68,13 @@ Agent(subagent_type: coder, prompt: "<Mode: bug-fix. for a Bug: write the regres
 
 Fixes after the reviewer's approval are re-reviewed once before Step 6.
 
+### Docs Update
+
+Per issue, only when the plan changes behavior, a rule, an endpoint, config, the data model or an error key. Agent(subagent_type: doc-writer, prompt: "Mode: topic. Service: `<dir of each repo in the plan>`. Topic: derive it from <plan-path> and the existing `docs/*.md`. Plan: <plan-path>. Update the docs in place per the feature-docs skill; if no doc update is needed report `no doc change needed`."). Add the files it reports to the commit file list. Runs before the commit so docs ship in the same commit; the writer edits Markdown only and never commits.
+
 ### Step 6: Commit on develop
 
-Agent(subagent_type: git-agent, prompt: "Skill git-branch-promotion applies. Commit only these files: <exact file list from the coder>. Branch: `develop` in every backend repo, `staging` in the web repo; run `git branch --show-current` in each repo first and stop if it differs. Message: `<type>(<module>) #<id>: <English summary of the issue>`, type `bugfix` for a Bug else `feat` or `chore`. Do not push. Report the commit sha and branch per repo.").
+Agent(subagent_type: git-agent, prompt: "Skill git-branch-promotion applies. Commit only these files: <exact file list from the coder plus the files from Docs Update>. Branch: `develop` in every backend repo, `staging` in the web repo; run `git branch --show-current` in each repo first and stop if it differs. Message: `<type>(<module>) #<id>: <English summary of the issue>`, type `bugfix` for a Bug else `feat` or `chore`. Do not push. Report the commit sha and branch per repo.").
 
 **Fail-closed guardrail**: the report shows files outside the list, or a branch other than expected → stop the batch.
 

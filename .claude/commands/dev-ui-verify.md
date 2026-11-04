@@ -6,6 +6,7 @@ allowed-tools:
   - Bash(/bin/ls *)
   - Bash(grep *)
   - Bash(git rev-parse *)
+  - Bash(pwd)
 ---
 
 # Dev UI Verify Command
@@ -20,7 +21,7 @@ You MUST delegate to the `ui-verifier` subagent. Do not drive the browser or fix
 
 - Arguments: `$ARGUMENTS`
 - Latest plan: !`/bin/ls -t .dev-plan/ 2>/dev/null | grep -m1 '\.md$'` (a file name inside `.dev-plan/`)
-- Project root: !`git rev-parse --show-toplevel 2>/dev/null`
+- Project root: !`git rev-parse --show-toplevel 2>/dev/null || pwd`
 
 Routes in the arguments → verify those. A plan path in the arguments, else the latest plan → verify its `## UI Checks`. Neither → let the agent derive routes from changed frontend files.
 

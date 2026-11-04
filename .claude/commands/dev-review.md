@@ -6,6 +6,7 @@ allowed-tools:
   - Bash(/bin/ls *)
   - Bash(grep *)
   - Bash(git rev-parse *)
+  - Bash(pwd)
 ---
 
 # Dev Review Command
@@ -19,7 +20,7 @@ You MUST delegate to the `reviewer` subagent. Do not review or fix code yourself
 ### Step 1: Invoke Reviewer
 
 Latest plan (may be empty): !`/bin/ls -t .dev-plan/ 2>/dev/null | grep -m1 '\.md$'` (a file name inside `.dev-plan/`)
-- Project root: !`git rev-parse --show-toplevel 2>/dev/null`
+- Project root: !`git rev-parse --show-toplevel 2>/dev/null || pwd`
 
 Use the Agent tool:
 
