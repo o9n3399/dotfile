@@ -50,6 +50,7 @@ Only when a plan path was given. Read it (fail-closed: file missing → report a
 ### Step 1: Plan
 
 Agent(subagent_type: planner, prompt: "Write an implementation plan for: <task>"). Capture the plan path.
+`<task>` names a `.dev-plan/explore/*.md` report → append `Explore report: <path> — read it first and reuse its flow; re-open only the files you will change.` to the prompt.
 
 **Fail-closed guardrail**: No plan path → report and stop.
 

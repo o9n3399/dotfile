@@ -34,6 +34,7 @@ If the arguments contain `--yes`, skip the approval questions in Step 2 and Step
 ### Step 1: Plan
 
 Agent(subagent_type: planner, prompt: "Mode: bug-fix. Plan a fix for: <bug>"). Capture the plan path.
+`<bug>` names a `.dev-plan/explore/*.md` report → append `Explore report: <path> — read it first and reuse its flow; re-open only the files you will change.` to the prompt.
 
 **Fail-closed guardrail**: If the plan has no Reproduction or Root Cause, or the planner reports it cannot reproduce, show its output and stop.
 
