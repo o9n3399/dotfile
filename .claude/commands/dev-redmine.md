@@ -92,7 +92,7 @@ Web: Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push `staging` (pl
 
 ### Step 8: Resolve on Redmine
 
-Only after Step 7 pushed both develop and staging. Agent(subagent_type: general-purpose, model: sonnet, prompt: "Follow the redmine-resolve skill for issue <id>: status Resolved, assign back to the author, fill root cause category/process, root cause analysis and correct actions from the plan and commit shas, set due_date if empty, add a note in Vietnamese with root cause, action, commit shas per repo and how it was verified. Never put the API key, passwords or internal hostnames in the note. Read the issue again afterwards and report status, assignee and the four fields.").
+Only after Step 7 pushed both develop and staging. Agent(subagent_type: general-purpose, model: sonnet, prompt: "Follow the redmine-resolve skill for issue <id>: status Resolved, assign per the skill (author if a Tester, else a project tester from the members cache — never ask), fill root cause category/process, root cause analysis and correct actions from the plan and commit shas, set due_date and estimated_hours if empty (estimate from the work: Defect ≥ 1h, Task/other ≥ 2h; work done: <plan path, repos and files changed>), add a note in Vietnamese with root cause, action, commit shas per repo and how it was verified. Never put the API key, passwords or internal hostnames in the note. Read the issue again afterwards and report status, assignee (and which rule picked them), estimate with its basis, any child issue touched, and the four fields.").
 
 A failed PUT (422 etc.) → one retry with the missing fields, then report the error and continue; the code is already pushed.
 
