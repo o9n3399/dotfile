@@ -1,6 +1,6 @@
 ---
 description: Full workflow — plan, implement, test, review, commit — using the dev agents
-argument-hint: [task description] [--lite] [--yes] [--auto]
+argument-hint: [task description | .dev-plan/<slug>.md] [--lite] [--yes] [--auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -17,7 +17,7 @@ Task: $ARGUMENTS
 You are an orchestrator. Every step MUST be delegated via the Agent tool to its subagent. You are forbidden from:
 
 - Reading source code, editing files, or running tests/git yourself
-- Skipping user approval of the plan (Step 2), unless `--yes` or `--auto` is given
+- Skipping user approval of the plan (Step 2), unless `--yes`, `--auto` or a ready plan path is given
 - Pushing without explicit user confirmation (Step 7)
 
 ## Flags
@@ -26,6 +26,7 @@ Strip every flag from the task text; `<task>` below means the text without flags
 
 - **`--yes`**: skip the Step 2 approval (still show the plan summary) and answer Step 7 with `Commit only`. Never push.
 - **Natural-language approval**: if the task text says "tự thực thi", "không cần confirm", "lên plan rồi thực thi đi" or "thực thi luôn", treat it as `--yes` (strip the phrase from `<task>`). It never implies push.
+- **Given plan**: if `<task>` names an existing plan file (a `.dev-plan/*.md` path, or `--plan <path>`), that is `<plan-path>` — skip Step 1 (see Step 0). Any other text in `<task>` is extra context for the coder.
 - **`--auto`**: implies `--yes`, and nothing asks the user:
   - Open Questions → pick the planner's recommended candidate (else the first) for each and re-run the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>`.
   - Every "ask the user whether to continue" point → stop there instead, leave the changes uncommitted and report why.
@@ -38,6 +39,13 @@ Strip every flag from the task text; `<task>` below means the text without flags
 - **Full suite at most twice**: only the first test run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed by the fix> <failing test files>.`
 
 ## Workflow
+
+### Step 0: Given Plan
+
+Only when a plan path was given. Read it (fail-closed: file missing → report and stop, never fall back to planning silently).
+- Unanswered blocking Open Questions → handle them as in Step 1's **Open Questions**, re-running the planner with `Answers: <answers>` on that plan path, then Step 2.
+- Otherwise → Step 2. Naming the plan counts as approval: show the summary and go straight to Step 3, as under `--yes`.
+- Some steps already checked → the Step 3 coder prompt becomes "Continue <plan-path> from the first unchecked step."
 
 ### Step 1: Plan
 
