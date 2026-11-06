@@ -50,7 +50,7 @@ Agent(subagent_type: planner, prompt: "<Mode: bug-fix. if the tracker is Bug> Pl
 
 **Fail-closed guardrail**: no plan path, or (Bug) no Reproduction or Root Cause → skip as in the workflow rule above.
 
-**Open Questions**: ask each with AskUserQuestion (candidates as options), re-run the planner with `Answers: <answers>`. Never approve a plan with blocking questions.
+**Open Questions**: ask each with AskUserQuestion (candidates as options), re-run the planner with `Answers: <answers>`. Never approve a plan with blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 3: Approve
 
@@ -63,7 +63,7 @@ Agent(subagent_type: coder, prompt: "<Mode: bug-fix. for a Bug: write the regres
 ### Step 5: Review and test
 
 1. Agent(subagent_type: reviewer, prompt: "Review changes against the base branch. Plan file: <plan-path>."). On findings → SendMessage to the coder → re-review once; still failing → skip the issue.
-2. Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <repos from the plan>."). `NEW` failures → SendMessage to the coder → scoped re-run, max 3 iterations, then skip the issue. `PRE-EXISTING` failures are listed, not blocking.
+2. Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo paths from the plan>. Base: develop. Changed files: <files the coder changed>."). `NEW` failures → SendMessage to the coder → scoped re-run, max 3 iterations, then skip the issue. `PRE-EXISTING` failures are listed, not blocking.
 3. Only when the plan has `## UI Checks`: Agent(subagent_type: ui-verifier, prompt: "Verify the UI Checks of <plan-path>."). `FAIL` → coder → re-verify, max 2 iterations.
 
 Fixes after the reviewer's approval are re-reviewed once before Step 6.
@@ -84,7 +84,7 @@ Skip for the web repo (it already committed on `staging`).
 
 Under `--push` go straight to the push; otherwise AskUserQuestion: `Push + resolve`, `Push only`, `Stop here (commit stays local)`.
 
-On a push answer, per backend repo, Agent(subagent_type: git-agent, model: sonnet, prompt: "ALLOW_PUSH=true Skill git-branch-promotion applies. Push `develop` (plain push). Then cherry-pick <sha> onto a temporary worktree of `origin/staging` (never merge develop into staging, never checkout staging in the live tree). If the cherry-pick conflicts, abort it and report. Report the worktree path and the new staging sha, but do not push staging yet."). Then Agent(subagent_type: test-runner, prompt: "Run stages: typecheck, scoped tests on the cherry-picked worktree <path>. Scope to: <files of the commit>.") — `FAIL` → stop the batch, leave the worktree unpushed. `PASS` → Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push the worktree HEAD to origin/staging (plain push, never forced), then remove and prune the worktree.").
+On a push answer, per backend repo, Agent(subagent_type: git-agent, model: sonnet, prompt: "ALLOW_PUSH=true Skill git-branch-promotion applies. Push `develop` (plain push). Then cherry-pick <sha> onto a temporary worktree of `origin/staging` (never merge develop into staging, never checkout staging in the live tree). If the cherry-pick conflicts, abort it and report. Report the worktree path and the new staging sha, but do not push staging yet."). Then Agent(subagent_type: test-runner, prompt: "Run stages: typecheck, scoped tests. Repos: <worktree path> (cherry-picked worktree of <live repo path>; reuse its container/node_modules). Base: origin/staging. Changed files: <files of the commit>.") — `FAIL` → stop the batch, leave the worktree unpushed. `PASS` → Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push the worktree HEAD to origin/staging (plain push, never forced), then remove and prune the worktree.").
 
 Web: Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push `staging` (plain push).").
 

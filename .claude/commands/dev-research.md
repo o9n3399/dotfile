@@ -22,7 +22,7 @@ You MUST delegate research to the `researcher` subagent. Do not search the web o
 
 Agent(subagent_type: researcher, prompt: "Depth: <deep if the arguments contain --deep, else quick>. Research: <question without --deep>").
 
-**Clarifying questions**: if the agent returns clarifying questions instead of a report, ask them with AskUserQuestion (candidate answers as options), then re-run the agent with `Answers: <answers>` appended to the same prompt.
+**Clarifying questions**: if the agent returns clarifying questions instead of a report, ask them with AskUserQuestion (candidate answers as options), then re-run the agent with `Answers: <answers>` appended to the same prompt. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 2: Present
 

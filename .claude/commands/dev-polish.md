@@ -33,7 +33,7 @@ Agent(subagent_type: coder, prompt: "Mode: polish. Apply syntax-optimize to thes
 
 ### Step 3: Verify (max 2 fix iterations)
 
-Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, scoped tests. Scope to: <files>.").
+Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, scoped tests. Repos: <absolute repo paths>. Changed files: <files>.").
 - `PASS` → Step 4
 - `FAIL` → SendMessage to the coder: "Mode: polish. Your rewrites broke: <failures>. Revert the offending rewrites to the original form." → repeat (spawn a new coder only if SendMessage fails)
 - Still `FAIL` → show failures and stop

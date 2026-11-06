@@ -28,19 +28,19 @@ If the arguments contain `--lite` (small, low-risk refactors), strip it from the
 
 - **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage (still prefixed `Mode: refactor.`) instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
 - **Unfinished coder**: if the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." before testing — at most twice, then report the remaining steps and stop.
-- **Full suite only at checkpoints**: the Step 1 baseline, the first Step 4 run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
+- **Full suite only at checkpoints**: the Step 1 baseline, the first Step 4 run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed by the fix> <failing test files>.`
 
 ## Workflow
 
 ### Step 1: Baseline + Plan (parallel)
 
 Launch both agents in the same message — they are independent:
-- Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite.")
+- Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed in this task>.")
 - Agent(subagent_type: planner, prompt: "Mode: refactor. Plan this refactor: <scope and goal>"). Capture the plan path.
 
 **Fail-closed guardrail**: If the baseline is not PASS, show failures and stop — refactoring on red hides regressions.
 
-**Open Questions**: if the planner reports blocking questions, ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run only the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions.
+**Open Questions**: if the planner reports blocking questions, ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run only the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 2: Approve
 
@@ -54,7 +54,7 @@ If the coder reports a step it had to undo → show why and stop.
 
 ### Step 4: Final Verify (max 2 fix iterations)
 
-First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). Every re-run is scoped (see Cost Rules).
+First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed in this task>."). Every re-run is scoped (see Cost Rules).
 - `PASS` → Step 5
 - `FAIL` → SendMessage to the coder: "Mode: refactor. The refactor of <plan-path> broke these tests: <failures>. Fix the refactored code to restore the original behavior." → repeat Step 4
 - Still `FAIL` after 2 fixes → show failures and stop
@@ -65,7 +65,7 @@ Agent(subagent_type: reviewer, prompt: "Mode: refactor. Review changes against m
 
 ### Step 6: Final Gate
 
-Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` → show the failures and stop.
+Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed in this task>."). `FAIL` → show the failures and stop.
 
 ### Docs Update
 

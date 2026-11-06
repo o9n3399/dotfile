@@ -35,7 +35,7 @@ Strip every flag from the task text; `<task>` below means the text without flags
 - **`--lite`** (small, low-risk changes): strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 - **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
 - **Unfinished coder**: if the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." before reviewing — at most twice, then list the remaining steps by number, ask the user whether to continue the coder or leave them, and record the choice in the summary.
-- **Full suite at most twice**: only the first test run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Scope to: <files changed by the fix> <failing test files>.`
+- **Full suite at most twice**: only the first test run and the Final Gate run the full suite. Every re-run after a fix uses `Run stages: lint, typecheck, scoped tests. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed by the fix> <failing test files>.`
 
 ## Workflow
 
@@ -45,7 +45,7 @@ Agent(subagent_type: planner, prompt: "Write an implementation plan for: <task>"
 
 **Fail-closed guardrail**: No plan path → report and stop.
 
-**Open Questions**: if the planner reports blocking questions (under `--auto`, see Flags), ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions.
+**Open Questions**: if the planner reports blocking questions (under `--auto`, see Flags), ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 2: Approve
 
@@ -67,7 +67,7 @@ Agent(subagent_type: reviewer, prompt: "Review changes against main. Plan file: 
 
 ### Step 5: Test Loop (max 3 iterations)
 
-First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). Every re-run is scoped (see Cost Rules).
+First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed in this task>."). Every re-run is scoped (see Cost Rules).
 - `PASS` → Step 6
 - `FAIL` with only `PRE-EXISTING` failures → list them in the summary, continue to Step 6
 - `FAIL` with `NEW` failures → SendMessage to the coder: "Fix these failures for plan <plan-path>: <failures>" → repeat Step 5
@@ -87,7 +87,7 @@ Agent(subagent_type: ui-verifier, prompt: "Verify the UI Checks of <plan-path>."
 
 ### Final Gate
 
-Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite."). `FAIL` with `NEW` failures → show them and ask the user whether to continue.
+Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo paths>. Base: <base branch>. Changed files: <files changed in this task>."). `FAIL` with `NEW` failures → show them and ask the user whether to continue.
 
 ### Docs Update
 

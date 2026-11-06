@@ -20,7 +20,7 @@ Use the Agent tool:
 
 - subagent_type: test-runner
 - description: Run project checks
-- prompt: If `$ARGUMENTS` contains `--full`: "Run stages: lint, typecheck, full test suite." Otherwise: "Run stages: lint, typecheck, scoped tests. Scope to: <path from arguments, or files changed in git diff if none>."
+- prompt: If `$ARGUMENTS` contains `--full`: "Run stages: lint, typecheck, full test suite. Repos: <absolute repo root>." Otherwise: "Run stages: lint, typecheck, scoped tests. Repos: <absolute repo root>. Changed files: <path from arguments, or `git diff --name-only HEAD` if none>."
 
 ### Step 2: Report
 

@@ -17,6 +17,7 @@
 - Before saying a code change is done, run the project's typecheck and the tests covering it, and show the result; if you couldn't run them, say so
 - Bugs: reproduce first (failing test or exact repro), fix the root cause, not the symptom
 - When I correct a mistake you could repeat, propose a one-line rule for this file
+- A typed "Other" answer in AskUserQuestion is still an answer — keep asking the remaining questions as popups
 
 ## Response Style
 
@@ -27,3 +28,4 @@
 
 - Never push after committing unless explicitly asked
 - Before committing, check git status and stage only intended files — never add a whole directory blindly
+- Merge commits on staging must stay untouched: never add fix commits or edit after merging unless I explicitly ask
