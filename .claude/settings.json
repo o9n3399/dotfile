@@ -10,7 +10,8 @@
   "permissions": {
     "allow": [
       "Bash(docker exec postgres_db psql:*)"
-    ]
+    ],
+    "defaultMode": "bypassPermissions"
   },
   "model": "opus",
   "statusLine": {
