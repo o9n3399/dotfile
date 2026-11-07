@@ -43,7 +43,7 @@ Run `git status` and `git diff` to understand the changes and current branch.
 
 ### Step 2: Pull
 
-Before committing, sync with the remote: if the current branch has an upstream (`git rev-parse --abbrev-ref @{u}` succeeds), run `git pull --rebase --autostash`. If you are on `main`/`master` and will branch off, pull it first so the new branch starts from the latest remote.
+Before committing, sync with the remote: if the current branch has an upstream (`git rev-parse --abbrev-ref @{u}` succeeds), run `git pull --rebase --autostash`.
 
 ### Step 3: Commit
 

@@ -19,6 +19,7 @@ You are an orchestrator. Every step MUST be delegated via the Agent tool to its 
 - Reading source code, editing files, or running tests/git yourself
 - Skipping user approval of the plan (Step 2), unless `--yes`, `--auto` or a ready plan path is given
 - Pushing without explicit user confirmation (Step 7)
+- Creating, switching or checking out any branch — work stays on each repo's base branch (`develop` for service repos, `staging` for web, per `commit-convention`); a `feat/`/`fix/` branch only when the user's own message asks for one
 
 ## Flags
 
@@ -44,7 +45,7 @@ Strip every flag from the task text; `<task>` below means the text without flags
 
 Only when a plan path was given. Read it (fail-closed: file missing → report and stop, never fall back to planning silently).
 - Unanswered blocking Open Questions → handle them as in Step 1's **Open Questions**, re-running the planner with `Answers: <answers>` on that plan path, then Step 2.
-- Otherwise → Step 2. Naming the plan counts as approval: show the summary and go straight to Step 3, as under `--yes`.
+- Otherwise → Step 2. Naming the plan counts as approval: show the summary and go straight to Branch Check, as under `--yes`.
 - Some steps already checked → the Step 3 coder prompt becomes "Continue <plan-path> from the first unchecked step."
 
 ### Step 1: Plan
@@ -58,7 +59,14 @@ Agent(subagent_type: planner, prompt: "Write an implementation plan for: <task>"
 
 ### Step 2: Approve
 
-Read the plan file, show Summary / Proposed Change / Steps / Risks (plus the path for the full plan). Under `--yes`/`--auto`, go straight to Step 3; otherwise AskUserQuestion: `Approve`, `Revise` (collect feedback → back to Step 1 with it), `Cancel`.
+Read the plan file, show Summary / Proposed Change / Steps / Risks (plus the path for the full plan). Under `--yes`/`--auto`, go straight to Branch Check; otherwise AskUserQuestion: `Approve`, `Revise` (collect feedback → back to Step 1 with it), `Cancel`. `Approve` → Branch Check.
+
+### Branch Check
+
+Before any code change, Agent(subagent_type: git-agent, model: haiku, prompt: "Report only — do not commit, stage, switch or checkout. For each repo: <absolute repo paths from the plan>, run `git -C <repo> branch --show-current` and `git -C <repo> status --short`, and report `<repo>: current=<branch> base=<develop for service repos, staging for web, per commit-convention> dirty=<files or none>`."). The reported `base` of each repo is `<base branch>` for every later step.
+- Every repo on its base → Step 3
+- A repo off its base (e.g. service on `staging`, or on a `feat/*` branch) → never switch it yourself or via an agent (the dev container mounts the live tree). AskUserQuestion: `I switched it, re-check`, `Continue on <current>` (record it in the summary), `Cancel`. Under `--auto`, stop and report
+- Dirty files outside the plan → show them; the coder and git-agent must leave them out
 
 ### Step 3: Implement
 
@@ -68,7 +76,7 @@ Order from here: code → restart + live API check (coder) → review → tests 
 
 ### Step 4: Review Loop (max 2 iterations)
 
-Agent(subagent_type: reviewer, prompt: "Review changes against main. Plan file: <plan-path>").
+Agent(subagent_type: reviewer, prompt: "Review the uncommitted changes against <base branch>. Plan file: <plan-path>").
 - `APPROVE` → Step 5
 - Otherwise → SendMessage to the coder: "Fix these findings for plan <plan-path>, then re-run the Live Check for the touched routes: <CRITICAL/HIGH findings>" → re-review
 - Every review after a fix is a re-review: "Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."
@@ -104,10 +112,13 @@ Only when the plan changes behavior, a rule, an endpoint, config, the data model
 
 ### Step 7: Ship
 
-Under `--yes`/`--auto`, use `Commit only` without asking. Otherwise AskUserQuestion: `Commit only`, `Commit + push + PR`, `Stop (leave uncommitted)`.
-Then Agent(subagent_type: git-agent):
-- `Commit only` → prompt: "Commit the current changes."
-- `Commit + push + PR` → prompt: "ALLOW_PUSH=true OPEN_PR=true Commit the current changes, push, and open a PR against main."
+Under `--yes`/`--auto`, use `Commit only` without asking. Otherwise AskUserQuestion: `Commit only`, `Commit + push <base>`, `Commit + push + promote staging` (service repos only), `Stop (leave uncommitted)`.
+Then, per repo, Agent(subagent_type: git-agent) — every prompt starts with "Commit on the current branch `<base branch>`; never create, switch or checkout a branch. Stage only: <files changed in this task>.":
+- `Commit only` → "… Do NOT push."
+- `Commit + push <base>` → "ALLOW_PUSH=true … Then `git fetch -q origin` and `git log origin/<base>..<base> --oneline`; if any commit is not this task's, return the list instead of pushing. Otherwise plain push `<base>`."
+- `Commit + push + promote staging` → the push above, then the promotion of `/dev-redmine` Step 7 (Skill git-branch-promotion: cherry-pick onto a temporary worktree of `origin/staging`, conflict → abort and report, test-runner on the worktree, push staging only on `PASS`). A conflict means staging and develop diverged — show the files and stop; never resolve it by branching.
+
+No PR option: the remotes are GitLab without `gh`. Open a PR/MR only when the user's own message asks for one, and then still commit on `<base>` unless they name a branch.
 
 ## Output Summary
 
@@ -115,5 +126,6 @@ Then Agent(subagent_type: git-agent):
 - Under `--auto`: every auto-chosen answer, so the user can check the assumptions
 - Live API check, review verdict (with remaining LOW findings), test result with `Scope` and pre-existing failures, UI verify result
 - `Created data:` from ui-verifier, so the user can clean it up
-- Commits and PR URL (if any)
+- Branch Check result (any repo kept off its base)
+- Commits per repo and branch, staging sha if promoted
 - If the change affects runtime behavior a test can't fully show (UI, HTTP API, CLI output), suggest `/verify` to run the app and confirm it

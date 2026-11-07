@@ -27,7 +27,7 @@ Use the Agent tool:
 
 - subagent_type: reviewer
 - description: Review changes
-- prompt: Review all changes against base branch `$ARGUMENTS` (use `main` if empty), including uncommitted changes. Plan file: <plan-path or "none">.
+- prompt: Review all changes against base branch `$ARGUMENTS` (if empty: `develop` for service repos, `staging` for web, per `commit-convention`), including uncommitted changes. Plan file: <plan-path or "none">.
 
 If the coder just fixed findings from an earlier review in this conversation, use the re-review prompt instead:
 "Re-review. Previous findings: <findings>. Files changed by the fix: <files>. Plan file: <plan-path>."

@@ -44,6 +44,10 @@ Agent(subagent_type: planner, prompt: "Mode: bug-fix. Plan a fix for: <bug>"). C
 
 Read the plan, show Summary / Symptom / Root Cause / Steps, then AskUserQuestion: `Approve`, `Revise`, `Cancel`.
 
+### Branch Check
+
+Before any code change, run the Branch Check of `/dev` (git-agent report only: current branch, base per `commit-convention`, dirty files per repo). The reported `base` is `<base branch>` for every later step. A repo off its base → never switch it; AskUserQuestion: `I switched it, re-check`, `Continue on <current>`, `Cancel`.
+
 ### Step 3: Red → Fix → Green
 
 Agent(subagent_type: coder, prompt: "Mode: bug-fix. Implement <plan-path> red-first: write the regression test, run it and paste its failing output, and only then apply the root-cause fix and paste the passing output. If the test passes before the fix, stop without touching production code."). Keep its agent ID.
@@ -56,7 +60,7 @@ First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typechec
 
 ### Step 5: Review + UI Verify (max 2 iterations)
 
-Agent(subagent_type: reviewer, prompt: "Mode: bug-fix. Review changes against main. Plan file: <plan-path>."), and in the same message when triggered Agent(subagent_type: ui-verifier, prompt: "Mode: bug-fix. Verify the UI Checks of <plan-path>.").
+Agent(subagent_type: reviewer, prompt: "Mode: bug-fix. Review the uncommitted changes against <base branch>. Plan file: <plan-path>."), and in the same message when triggered Agent(subagent_type: ui-verifier, prompt: "Mode: bug-fix. Verify the UI Checks of <plan-path>.").
 
 **UI verify trigger**: the plan has a `## UI Checks` section — the planner adds one whenever the change touches web UI, so a style-only change without it does not launch a browser. When triggered, launch `ui-verifier` in the same message as the reviewer — both are read-only on code. `ENV_MISSING` from ui-verifier is not a failure: show what it needs and continue.
 
@@ -72,7 +76,7 @@ Only when the fix changes a rule or behavior that a `docs/*.md`, `CLAUDE.md` or 
 
 ### Step 7: Commit
 
-AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the repo's default branch per `commit-convention` (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked).").
+AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked).").
 
 ## Output Summary
 

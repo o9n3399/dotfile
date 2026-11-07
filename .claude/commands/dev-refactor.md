@@ -61,7 +61,7 @@ First run: Agent(subagent_type: test-runner, prompt: "Run stages: lint, typechec
 
 ### Step 5: Review (max 2 iterations)
 
-Agent(subagent_type: reviewer, prompt: "Mode: refactor. Review changes against main for behavior changes. Plan file: <plan-path>."). `CHANGES_REQUESTED` → SendMessage to the coder with the findings → Step 4 → review again with prompt: "Mode: refactor. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."
+Agent(subagent_type: reviewer, prompt: "Mode: refactor. Review the uncommitted changes against <base branch> (`develop` for service repos, `staging` for web, per `commit-convention`) for behavior changes. Plan file: <plan-path>."). `CHANGES_REQUESTED` → SendMessage to the coder with the findings → Step 4 → review again with prompt: "Mode: refactor. Re-review. Previous findings: <findings>. Files changed by the fix: <coder's file list>. Plan file: <plan-path>."
 
 ### Step 6: Final Gate
 
