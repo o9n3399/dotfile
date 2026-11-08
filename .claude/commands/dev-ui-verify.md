@@ -4,6 +4,8 @@ model: sonnet
 argument-hint: [route... | plan-path]
 allowed-tools:
   - Agent
+  - SendMessage
+  - AskUserQuestion
   - Bash(/bin/ls *)
   - Bash(grep *)
   - Bash(git rev-parse *)
@@ -33,4 +35,6 @@ Agent(subagent_type: ui-verifier, prompt: "Verify <routes | the UI Checks of <pl
 ### Step 3: Report
 
 If the result has `Not checked:` items, re-invoke the agent once with "Verify only these checks of <plan-path>: <items>." and merge both reports.
-Show the result, including `Created data:` so the user can clean it up. On `FAIL`, suggest passing the failures to `coder`; on `ENV_MISSING`, show what the project's `CLAUDE.md` needs (base URL, start command, credential env vars).
+Show the result, including `Created data:` so the user can clean it up. On `ENV_MISSING`, show what the project's `CLAUDE.md` needs (base URL, start command, credential env vars). Never end with a prose question or a "next step" suggestion.
+
+`FAIL` → AskUserQuestion: `Send to coder + re-run`, `Stop`. Send → SendMessage the coder of this conversation (else Agent(subagent_type: coder)) "Fix these UI failures for <plan-path or the routes>: <failures>", then re-invoke the agent with "Re-verify only these failed UI Checks of <plan-path>: <failed checks>." and this step again.

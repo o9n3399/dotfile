@@ -1,6 +1,6 @@
 ---
 description: Behavior-preserving refactor — green baseline, small steps each kept green, review, commit
-argument-hint: [scope and goal] [--yes] [--lite]
+argument-hint: [scope and goal] [--ask] [--lite]
 allowed-tools:
   - Agent
   - SendMessage
@@ -19,8 +19,9 @@ Every step MUST be delegated via the Agent tool. Every planner/coder/reviewer pr
 - Reading source code, editing files, or running tests/git yourself
 - Starting implementation on a red baseline
 - Pushing — this command only commits
+- Stopping or asking outside the stop points of skill `dev-pipeline-stops`, or ending a turn with a prose question — every question is an AskUserQuestion popup
 
-If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 7.
+Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the approval questions in Step 2 and Step 7; `--ask` asks both.
 
 If the arguments contain `--lite` (small, low-risk refactors), strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 
@@ -44,7 +45,7 @@ Launch both agents in the same message — they are independent:
 
 ### Step 2: Approve
 
-Read the plan, show Summary / Proposed Change / Behavior Contract / Steps / Risks, then AskUserQuestion: `Approve`, `Revise` (re-run planner with feedback), `Cancel`.
+Read the plan, show Summary / Proposed Change / Behavior Contract / Steps / Risks. Unless `--ask`, go straight to Step 3. Under `--ask`, AskUserQuestion: `Approve`, `Revise` (re-run planner with feedback; ask again only if the revised Steps or Risks changed), `Cancel`.
 
 ### Step 3: Implement
 
@@ -73,7 +74,7 @@ Only when the refactor moved or renamed files, components or endpoints that the 
 
 ### Step 7: Commit
 
-AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on the repo's default branch per `commit-convention` (`develop` for services, `staging` for web; a `refactor/<slug>` branch only if the user asked).").
+Under `--ask`, AskUserQuestion: `Commit`, `Stop`; otherwise commit without asking. Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `refactor/<slug>` branch only if the user asked).").
 
 ## Output Summary
 

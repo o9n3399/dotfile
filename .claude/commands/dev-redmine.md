@@ -1,6 +1,6 @@
 ---
 description: Resolve several Redmine issues end to end — read, plan, fix, test, commit develop, cherry-pick staging, resolve on Redmine
-argument-hint: <issue id or URL> [<id> ...] [--yes] [--push] [--lite] [--no-resolve]
+argument-hint: <issue id or URL> [<id> ...] [--ask] [--push] [--lite] [--no-resolve]
 allowed-tools:
   - Agent
   - SendMessage
@@ -25,8 +25,11 @@ You are an orchestrator. Every step MUST be delegated via the Agent tool (or Sen
 
 Strip every flag from the arguments. Each remaining token is an issue id (a number, or `…/issues/<id>` URL); drop duplicates and keep the given order.
 
-- **`--yes`**: skip the plan approval (Step 3), still show the plan summary.
-- **`--push`**: counts as the explicit push instruction; Step 7 does not ask. Without it, Step 7 asks.
+Flags follow skill `dev-pipeline-stops`; never stop or ask outside its stop points, and never end a turn with a prose question.
+
+- **Default (`--yes`)**: skip the plan approval (Step 3), still show the plan summary. Passing `--yes` changes nothing.
+- **`--ask`**: ask the plan approval (Step 3) and the push question (Step 7).
+- **`--push`**: counts as the explicit push instruction; Step 7 pushes and resolves without asking. Without `--push` or `--ask`, Step 7 keeps the commit local.
 - **`--lite`**: pass `model: sonnet` on every planner and reviewer Agent call.
 - **`--no-resolve`**: stop after the push, skip Step 8.
 
@@ -54,7 +57,7 @@ Agent(subagent_type: planner, prompt: "<Mode: bug-fix. if the tracker is Bug> Pl
 
 ### Step 3: Approve
 
-Read the plan, show Summary / Root Cause / Steps / Risks and the repos it touches. Under `--yes` go straight on; otherwise AskUserQuestion: `Approve`, `Revise`, `Skip this issue`, `Stop the batch`.
+Read the plan, show Summary / Root Cause / Steps / Risks and the repos it touches. Unless `--ask`, go straight on; under `--ask`, AskUserQuestion: `Approve`, `Revise`, `Skip this issue`, `Stop the batch`.
 
 ### Step 4: Implement
 
@@ -82,7 +85,7 @@ Agent(subagent_type: git-agent, prompt: "Skill git-branch-promotion applies. Com
 
 Skip for the web repo (it already committed on `staging`).
 
-Under `--push` go straight to the push; otherwise AskUserQuestion: `Push + resolve`, `Push only`, `Stop here (commit stays local)`.
+Under `--push` go straight to the push. Under `--ask`, AskUserQuestion: `Push + resolve`, `Push only`, `Stop here (commit stays local)`. Otherwise treat it as `Stop here` without asking.
 
 On a push answer, per backend repo, Agent(subagent_type: git-agent, model: sonnet, prompt: "ALLOW_PUSH=true Skill git-branch-promotion applies. Push `develop` (plain push). Then cherry-pick <sha> onto a temporary worktree of `origin/staging` (never merge develop into staging, never checkout staging in the live tree). If the cherry-pick conflicts, abort it and report. Report the worktree path and the new staging sha, but do not push staging yet."). Then Agent(subagent_type: test-runner, prompt: "Run stages: typecheck, scoped tests. Repos: <worktree path> (cherry-picked worktree of <live repo path>; reuse its container/node_modules). Base: origin/staging. Changed files: <files of the commit>.") — `FAIL` → stop the batch, leave the worktree unpushed. `PASS` → Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push the worktree HEAD to origin/staging (plain push, never forced), then remove and prune the worktree.").
 
@@ -101,6 +104,6 @@ A failed PUT (422 etc.) → one retry with the missing fields, then report the e
 A table, one row per issue: `#id | repo(s) | develop sha | staging sha | tests | review | Redmine status`, then:
 
 - Skipped or not-started issues with the reason
-- Assumptions the user approved or `--yes` auto-accepted, plan paths
+- Assumptions the user approved or the default `--yes` auto-accepted, plan paths
 - Pre-existing test failures
 - `Created data:` from ui-verifier, if any

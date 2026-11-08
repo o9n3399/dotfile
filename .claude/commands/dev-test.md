@@ -4,6 +4,8 @@ model: sonnet
 argument-hint: [path] [--full]
 allowed-tools:
   - Agent
+  - SendMessage
+  - AskUserQuestion
 ---
 
 # Dev Test Command
@@ -24,4 +26,6 @@ Use the Agent tool:
 
 ### Step 2: Report
 
-Show the result as returned. On failure, suggest passing the failures to `coder`.
+Show the result as returned; never end with a prose question or a "next step" suggestion.
+
+`FAIL` with `NEW` failures → AskUserQuestion: `Send to coder + re-run`, `Stop`. Send → SendMessage the coder of this conversation (else Agent(subagent_type: coder)) "Fix these failures: <failures>", then Step 1 scoped to the fixed and failing files and this step again. Only `PRE-EXISTING` failures → list them and end. `ENV_MISSING` / `NO_TESTS_DETECTED` → show what is missing and end.

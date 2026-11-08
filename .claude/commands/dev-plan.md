@@ -1,11 +1,12 @@
 ---
 description: Explore the codebase and write an implementation plan via the planner agent
 model: sonnet
-argument-hint: [task description]
+argument-hint: [task description] [--lite] [--push]
 allowed-tools:
   - Agent
   - AskUserQuestion
   - Read
+  - Skill
 ---
 
 # Dev Plan Command
@@ -29,7 +30,7 @@ Use the Agent tool:
 
 - subagent_type: planner
 - description: Plan implementation
-- prompt: Write an implementation plan for this task: $ARGUMENTS
+- prompt: Write an implementation plan for this task: <task without `--lite` / `--push`>
 
 **Fail-closed guardrail**: If the agent returns no plan path, report its output and stop.
 
@@ -37,4 +38,9 @@ Use the Agent tool:
 
 ### Step 2: Present Plan
 
-Read the plan file and show Summary / Current State / Proposed Change / Steps / Risks and the open questions, plus the path for the full plan. Tell the user to run `/dev-implement <plan-path>` once approved.
+Read the plan file and show Summary / Current State / Proposed Change / Steps / Risks and the open questions, plus the path for the full plan.
+
+Then AskUserQuestion (never a prose question): `Approve + run`, `Revise`, `Stop`.
+- `Approve + run` → invoke Skill `dev` with args `<plan-path>` plus `--lite` / `--push` if the user's arguments had them, and follow it to the end
+- `Revise` → collect the feedback, re-run Step 1 with it appended, then this step again
+- `Stop` → show the plan path and end

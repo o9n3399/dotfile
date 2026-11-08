@@ -6,6 +6,7 @@ allowed-tools:
   - Agent
   - AskUserQuestion
   - Read
+  - Skill
   - Bash(ls *)
 ---
 
@@ -31,6 +32,10 @@ Agent(subagent_type: explorer, prompt: "Topic: <topic without the path>. Repo: <
 
 ### Step 3: Present
 
-Read the report and show TL;DR, Flow (steps only) and the Issues table, plus the report path. Suggest next steps when they fit:
-- an issue to fix → `/dev-fix <issue> — see <report-path>`
-- a change to plan → `/dev <task> — see <report-path>`
+Read the report and show TL;DR, Flow (steps only) and the Issues table, plus the report path.
+
+Then AskUserQuestion (never a prose question) with up to 3 options from the report, most severe first, plus `Stop`:
+- an issue to fix → `Fix: <issue>` → invoke Skill `dev-fix` with args `<issue> — see <report-path>`
+- a change to plan → `Plan: <task>` → invoke Skill `dev` with args `<task> — see <report-path>`
+
+Follow the invoked command to the end. `Stop` → end with the report path. No issue or change in the report → skip the question.

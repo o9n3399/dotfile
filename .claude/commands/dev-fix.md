@@ -1,6 +1,6 @@
 ---
 description: Fix a bug reproduce-first — failing regression test, minimal root-cause fix, review, commit
-argument-hint: [bug description] [--yes] [--lite]
+argument-hint: [bug description] [--ask] [--push] [--lite]
 allowed-tools:
   - Agent
   - SendMessage
@@ -18,9 +18,10 @@ Every step MUST be delegated via the Agent tool (or SendMessage to the existing 
 
 - Reading source code, editing files, or running tests/git yourself
 - Accepting a fix whose report lacks the regression test's failing output before the fix
-- Pushing — this command only commits
+- Pushing without `--push` or an explicit Ship answer (Step 7)
+- Stopping or asking outside the stop points of skill `dev-pipeline-stops`, or ending a turn with a prose question — every question is an AskUserQuestion popup
 
-If the arguments contain `--yes`, skip the approval questions in Step 2 and Step 7 (approve plan, commit).
+Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the Step 2 approval and answer Step 7 with `Commit only`; `--ask` asks both; `--push` answers Step 7 with `Commit + push + promote staging` (web: `Commit + push <base>`), only from the user's own message.
 
 ## Cost Rules
 
@@ -42,7 +43,7 @@ Agent(subagent_type: planner, prompt: "Mode: bug-fix. Plan a fix for: <bug>"). C
 
 ### Step 2: Approve
 
-Read the plan, show Summary / Symptom / Root Cause / Steps, then AskUserQuestion: `Approve`, `Revise`, `Cancel`.
+Read the plan, show Summary / Symptom / Root Cause / Steps. Unless `--ask`, go straight to Branch Check. Under `--ask`, AskUserQuestion: `Approve`, `Revise` (ask again only if the revised Steps changed), `Cancel`.
 
 ### Branch Check
 
@@ -74,9 +75,10 @@ Only if a fix landed after the last full-suite `PASS`: Agent(subagent_type: test
 
 Only when the fix changes a rule or behavior that a `docs/*.md`, `CLAUDE.md` or `README.md` of the service states. Agent(subagent_type: doc-writer, prompt: "Mode: topic. Service: `<dir of each repo in the plan>`. Topic: derive it from <plan-path> and the existing `docs/*.md`. Plan: <plan-path>. Update the docs in place per the feature-docs skill; if no doc update is needed report `no doc change needed`."). Add the files it reports to the commit file list. Runs before the commit so docs ship in the same commit; the writer edits Markdown only and never commits.
 
-### Step 7: Commit
+### Step 7: Ship
 
-AskUserQuestion: `Commit`, `Stop`. On commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked).").
+Under `--push`, use `Commit + push + promote staging` (web: `Commit + push <base>`) without asking. Under `--ask`, AskUserQuestion: `Commit only`, `Commit + push <base>`, `Commit + push + promote staging` (service repos only), `Stop (leave uncommitted)`. Otherwise use `Commit only` without asking.
+Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked)."). A push answer → the push and promotion of `/dev` Step 7.
 
 ## Output Summary
 

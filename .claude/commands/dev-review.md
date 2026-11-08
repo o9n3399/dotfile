@@ -4,6 +4,8 @@ model: sonnet
 argument-hint: [base-branch]
 allowed-tools:
   - Agent
+  - SendMessage
+  - AskUserQuestion
   - Bash(/bin/ls *)
   - Bash(grep *)
   - Bash(git rev-parse *)
@@ -34,4 +36,6 @@ If the coder just fixed findings from an earlier review in this conversation, us
 
 ### Step 2: Report
 
-Show the verdict and findings exactly as returned. Do not fix anything.
+Show the verdict and findings exactly as returned. Do not fix anything yourself, and never end with a prose question or a "next step" suggestion.
+
+`CHANGES_REQUESTED` with CRITICAL/HIGH findings → AskUserQuestion: `Send to coder + re-run`, `Stop`. Send → SendMessage the coder of this conversation (else Agent(subagent_type: coder)) "Fix these findings for plan <plan-path or "none">: <CRITICAL/HIGH findings>", then Step 1 with the re-review prompt and this step again. Only LOW or format/doc findings → list them and end.

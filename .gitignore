@@ -8,6 +8,7 @@
 !.claude/skills/bug-fix/
 !.claude/skills/code-convention/
 !.claude/skills/commit-convention/
+!.claude/skills/dev-pipeline-stops/
 !.claude/skills/explore-report/
 !.claude/skills/feature-docs/
 !.claude/skills/nestjs-convention/
