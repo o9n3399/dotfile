@@ -1,5 +1,5 @@
 ---
-description: Fix a bug reproduce-first — failing regression test, minimal root-cause fix, review, commit
+description: "Bug fix: red test → root-cause fix → review → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet"
 argument-hint: [bug description] [--ask] [--push] [--lite]
 allowed-tools:
   - Agent

@@ -1,5 +1,5 @@
 ---
-description: Resolve several Redmine issues end to end — read, plan, fix, test, commit develop, cherry-pick staging, resolve on Redmine
+description: "Redmine issues: plan → fix → test → commit develop · --push: push + staging + resolve · --no-resolve: skip resolve · --ask: ask approval/push · --lite: sonnet"
 argument-hint: <issue id or URL> [<id> ...] [--ask] [--push] [--lite] [--no-resolve]
 allowed-tools:
   - Agent

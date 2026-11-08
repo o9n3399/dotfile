@@ -1,5 +1,5 @@
 ---
-description: Behavior-preserving refactor — green baseline, small steps each kept green, review, commit
+description: "Refactor, behavior kept: green baseline → small steps → review → commit · --ask: ask approval/commit · --lite: sonnet"
 argument-hint: [scope and goal] [--ask] [--lite]
 allowed-tools:
   - Agent

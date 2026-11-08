@@ -1,5 +1,5 @@
 ---
-description: Implement an approved plan — runs the full /dev flow on it (review, test, UI verify, commit); --only for coder alone
+description: "Run a plan through /dev (code → review → test → UI → commit) · --only: coder only · --ask: ask ship · --push: push + staging · --lite: sonnet · --auto: auto-answer"
 argument-hint: [plan-path] [--only] [--lite] [--ask] [--push] [--auto]
 allowed-tools:
   - Agent

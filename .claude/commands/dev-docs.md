@@ -1,5 +1,5 @@
 ---
-description: Write or update developer docs for the repo's services via parallel doc-writer agents, then refresh the service index
+description: "Write docs for the repo's services + service index · --all: every service"
 model: sonnet
 argument-hint: [service...] [--all]
 allowed-tools:

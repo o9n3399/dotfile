@@ -1,5 +1,5 @@
 ---
-description: Tighten code syntax without changing behavior — modern idioms, less nesting, dead code removal
+description: "Tighten code syntax, behavior kept · --review: also run the reviewer"
 argument-hint: [path...] [--review]
 allowed-tools:
   - Agent

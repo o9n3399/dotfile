@@ -1,5 +1,5 @@
 ---
-description: Research a technology choice against the current stack via the researcher agent — cited report in .dev-plan/research/
+description: "Research a tech choice → cited report in .dev-plan/research/ · --deep: deeper, more sources"
 model: sonnet
 argument-hint: [question] [--deep]
 allowed-tools:

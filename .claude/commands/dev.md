@@ -1,5 +1,5 @@
 ---
-description: Full workflow — plan, implement, test, review, commit — using the dev agents
+description: "Plan → code → review → test → UI → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet · --auto: auto-answer"
 argument-hint: [task description | .dev-plan/<slug>.md] [--lite] [--ask] [--push] [--auto]
 allowed-tools:
   - Agent

@@ -1,5 +1,5 @@
 ---
-description: Explore the codebase and write an implementation plan via the planner agent
+description: "Write a plan, then Approve + run /dev · --lite: sonnet · --push: /dev pushes + staging"
 model: sonnet
 argument-hint: [task description] [--lite] [--push]
 allowed-tools:

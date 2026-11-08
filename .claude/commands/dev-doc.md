@@ -1,5 +1,5 @@
 ---
-description: Document or update one feature/topic of a service into docs/<topic>.md and link it from CLAUDE.md
+description: "Write docs/<topic>.md for one service topic · --plan <path>: source from that plan"
 model: sonnet
 argument-hint: <service> [topic] [--plan <plan-path>]
 allowed-tools:
