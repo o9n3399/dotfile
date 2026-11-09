@@ -11,12 +11,14 @@
 - No comments unless the WHY is non-obvious — never comment what the code already says
 - One service/class per file — never combine multiple services into one file
 - Folder names must be singular, never plural (e.g. `constant/`, `component/`, `entity/`, `repository/`)
+- Write Nerd Font icons in Lua as `\u{xxxx}` escapes, never as raw glyphs
 
 ## Working Rules
 
 - Before saying a code change is done, run the project's typecheck and the tests covering it, and show the result; if you couldn't run them, say so
 - Bugs: reproduce first (failing test or exact repro), fix the root cause, not the symptom
 - When I correct a mistake you could repeat, propose a one-line rule for this file
+- When asked to hide or remove something, change only what was named; if the scope is unclear, ask with AskUserQuestion
 - A typed "Other" answer in AskUserQuestion is still an answer — keep asking the remaining questions as popups
 - When a turn ends with a choice for me, ask it with AskUserQuestion (options + Recommended), never a prose question
 
