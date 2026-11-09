@@ -1,67 +1,54 @@
-function config()
-  local lualine = require("lualine")
-  local lazy_status = require("lazy.status") -- to configure lazy pending updates count
+local colors = {
+  blue = "#65D1FF",
+  green = "#3EFFDC",
+  violet = "#FF61EF",
+  yellow = "#FFDA7B",
+  red = "#FF4A4A",
+  fg = "#c3ccdc",
+  bg = "NONE",
+  dark = "#112638",
+}
 
-  local colors = {
-    blue = "#65D1FF",
-    green = "#3EFFDC",
-    violet = "#FF61EF",
-    yellow = "#FFDA7B",
-    red = "#FF4A4A",
-    fg = "#c3ccdc",
-    -- bg = "#112638",
-    bg = "",
-    inactive_bg = "#2c3043",
+local function mode_theme(accent)
+  return {
+    a = { bg = accent, fg = colors.dark, gui = "bold" },
+    b = { bg = colors.bg, fg = colors.fg },
+    c = { bg = colors.bg, fg = colors.fg },
   }
+end
 
-  local my_lualine_theme = {
-    normal = {
-      a = { bg = colors.blue, fg = colors.bg, gui = "bold" },
-      b = { bg = colors.bg, fg = colors.fg },
-      c = { bg = colors.bg, fg = colors.fg },
-    },
-    insert = {
-      a = { bg = colors.green, fg = colors.bg, gui = "bold" },
-      b = { bg = colors.bg, fg = colors.fg },
-      c = { bg = colors.bg, fg = colors.fg },
-    },
-    visual = {
-      a = { bg = colors.violet, fg = colors.bg, gui = "bold" },
-      b = { bg = colors.bg, fg = colors.fg },
-      c = { bg = colors.bg, fg = colors.fg },
-    },
-    command = {
-      a = { bg = colors.yellow, fg = colors.bg, gui = "bold" },
-      b = { bg = colors.bg, fg = colors.fg },
-      c = { bg = colors.bg, fg = colors.fg },
-    },
-    replace = {
-      a = { bg = colors.red, fg = colors.bg, gui = "bold" },
-      b = { bg = colors.bg, fg = colors.fg },
-      c = { bg = colors.bg, fg = colors.fg },
-    },
-    inactive = {
-      a = { bg = colors.inactive_bg, fg = colors.semilightgray, gui = "bold" },
-      b = { bg = colors.inactive_bg, fg = colors.semilightgray },
-      c = { bg = colors.inactive_bg, fg = colors.semilightgray },
-    },
-  }
+local function config()
+  local lazy_status = require("lazy.status")
 
-  -- configure lualine with modified theme
-  lualine.setup({
+  require("lualine").setup({
     options = {
-      theme = my_lualine_theme,
+      theme = {
+        normal = mode_theme(colors.blue),
+        insert = mode_theme(colors.green),
+        visual = mode_theme(colors.violet),
+        command = mode_theme(colors.yellow),
+        replace = mode_theme(colors.red),
+        inactive = mode_theme(colors.fg),
+      },
+      globalstatus = true,
+      disabled_filetypes = { statusline = { "snacks_dashboard" } },
     },
     sections = {
+      lualine_c = { { "filename", path = 1 } },
       lualine_x = {
         {
-          lazy_status.updates,
-          cond = lazy_status.has_updates,
-          color = { fg = "#ff9e64" },
+          function()
+            return "recording @" .. vim.fn.reg_recording()
+          end,
+          cond = function()
+            return vim.fn.reg_recording() ~= ""
+          end,
+          color = { fg = colors.red },
         },
-        { "encoding" },
-        { "fileformat" },
-        { "filetype" },
+        { lazy_status.updates, cond = lazy_status.has_updates, color = { fg = "#ff9e64" } },
+        "encoding",
+        "fileformat",
+        "filetype",
       },
     },
   })
@@ -69,6 +56,7 @@ end
 
 return {
   "nvim-lualine/lualine.nvim",
+  event = "VeryLazy",
   dependencies = { "nvim-tree/nvim-web-devicons" },
   config = config,
 }

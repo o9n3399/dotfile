@@ -1,4 +1,4 @@
-function config()
+local function config()
   local todo_comments = require("todo-comments")
 
   -- set keymaps

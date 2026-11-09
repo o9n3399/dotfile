@@ -1,4 +1,4 @@
-function config()
+local function config()
   -- Default options:
   require("gruvbox").setup({
     terminal_colors = true, -- add neovim terminal colors

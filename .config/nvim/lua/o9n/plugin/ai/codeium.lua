@@ -1,10 +1,12 @@
 return {
   "Exafunction/windsurf.nvim",
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-    "hrsh7th/nvim-cmp",
+  event = "InsertEnter",
+  dependencies = { "nvim-lua/plenary.nvim" },
+  opts = {
+    enable_cmp_source = false,
+    virtual_text = { enabled = false },
   },
-  config = function()
-    require("codeium").setup({})
+  config = function(_, opts)
+    require("codeium").setup(opts)
   end,
 }

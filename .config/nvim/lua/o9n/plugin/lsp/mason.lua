@@ -1,24 +1,28 @@
-function config()
-  local mason = require("mason")
-
-  -- import mason-lspconfig
-  local mason_lspconfig = require("mason-lspconfig")
-
-  local mason_tool_installer = require("mason-tool-installer")
-
-  -- enable mason and configure icons
-  mason.setup({
-    ui = {
-      icons = {
-        package_installed = "✓",
-        package_pending = "➜",
-        package_uninstalled = "✗",
+return {
+  "mason-org/mason-lspconfig.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = {
+    { "mason-org/mason.nvim", cmd = "Mason", opts = {} },
+    "neovim/nvim-lspconfig",
+    {
+      "WhoIsSethDaniel/mason-tool-installer.nvim",
+      opts = {
+        ensure_installed = {
+          "prettierd",
+          "prettier",
+          "stylua",
+          "isort",
+          "black",
+          "pylint",
+          "eslint_d",
+          "golangci-lint-langserver",
+          "rustfmt",
+          "tree-sitter-cli",
+        },
       },
     },
-  })
-
-  mason_lspconfig.setup({
-    -- list of servers for mason to install
+  },
+  opts = {
     ensure_installed = {
       "rust_analyzer",
       "html",
@@ -30,33 +34,7 @@ function config()
       "ts_ls",
       "harper_ls",
     },
-    -- stylua/prettier/etc. are formatters (run via conform), not LSP servers.
-    -- Prevent mason-lspconfig from auto-starting `stylua --lsp` (unsupported flag).
-    automatic_enable = {
-      exclude = { "stylua" },
-    },
-  })
-
-  mason_tool_installer.setup({
-    ensure_installed = {
-      "prettier", -- prettier formatter
-      "stylua", -- lua formatter
-      "isort", -- python formatter
-      "black", -- python formatter
-      "pylint",
-      "eslint_d",
-      "golangci-lint-langserver",
-      "rustfmt",
-      "tree-sitter-cli",
-    },
-  })
-end
-
-return {
-  "williamboman/mason.nvim",
-  dependencies = {
-    "williamboman/mason-lspconfig.nvim",
-    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    -- stylua is a formatter run by conform; `stylua --lsp` must not be started
+    automatic_enable = { exclude = { "stylua" } },
   },
-  config = config,
 }

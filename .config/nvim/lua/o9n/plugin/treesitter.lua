@@ -62,7 +62,7 @@ return {
     require("nvim-treesitter").update()
   end,
   dependencies = {
-    "windwp/nvim-ts-autotag",
+    { "windwp/nvim-ts-autotag", opts = {} },
   },
   config = config,
 }

@@ -1,70 +1,97 @@
-function config()
-  -- import cmp-nvim-lsp plugin
-  local cmp_nvim_lsp = require("cmp_nvim_lsp")
+local function on_attach(args)
+  local buf = args.buf
+  local client = vim.lsp.get_client_by_id(args.data.client_id)
 
-  -- local keymap = vim.keymap -- for conciseness
-  -- vim.api.nvim_create_autocmd("LspAttach", {
-  --   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-  --   callback = function(ev)
-  --     -- Buffer local mappings.
-  --     -- See `:help vim.lsp.*` for documentation on any of the below functions
-  --     local opts = { buffer = ev.buf, silent = true }
-  --
-  --     -- set keybinds
-  --     opts.desc = "Show LSP references"
-  --     keymap.set("n", "gR", "<cmd>Telescope lsp_references<CR>", opts) -- show definition, references
-  --
-  --     opts.desc = "Go to declaration"
-  --     keymap.set("n", "gD", vim.lsp.buf.declaration, opts) -- go to declaration
-  --
-  --     opts.desc = "Show LSP definitions"
-  --     keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts) -- show lsp definitions
-  --
-  --     opts.desc = "Show LSP implementations"
-  --     keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts) -- show lsp implementations
-  --
-  --     opts.desc = "Show LSP type definitions"
-  --     keymap.set("n", "gt", "<cmd>Telescope lsp_type_definitions<CR>", opts) -- show lsp type definitions
-  --
-  --     opts.desc = "See available code actions"
-  --     keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts) -- see available code actions, in visual mode will apply to selection
-  --
-  --     opts.desc = "Smart rename"
-  --     keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts) -- smart rename
-  --
-  --     opts.desc = "Show buffer diagnostics"
-  --     keymap.set("n", "<leader>D", "<cmd>Telescope diagnostics bufnr=0<CR>", opts) -- show  diagnostics for file
-  --
-  --     opts.desc = "Show line diagnostics"
-  --     keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts) -- show diagnostics for line
-  --
-  --     opts.desc = "Go to previous diagnostic"
-  --     keymap.set("n", "[d", vim.diagnostic.goto_prev, opts) -- jump to previous diagnostic in buffer
-  --
-  --     opts.desc = "Go to next diagnostic"
-  --     keymap.set("n", "]d", vim.diagnostic.goto_next, opts) -- jump to next diagnostic in buffer
-  --
-  --     opts.desc = "Show documentation for what is under cursor"
-  --     keymap.set("n", "K", vim.lsp.buf.hover, opts) -- show documentation for what is under cursor
-  --
-  --     opts.desc = "Restart LSP"
-  --     keymap.set("n", "<leader>rs", ":LspRestart<CR>", opts) -- mapping to restart lsp if necessary
-  --   end,
-  -- })
+  -- nowait: built-in grn/grr/gra... would otherwise delay `gr` by 'timeoutlen'
+  local function map(mode, lhs, rhs, desc)
+    vim.keymap.set(mode, lhs, rhs, { buffer = buf, desc = desc, nowait = true })
+  end
 
-  -- used to enable autocompletion (assign to every lsp server config)
-  local capabilities = cmp_nvim_lsp.default_capabilities()
+  map("n", "gd", function()
+    Snacks.picker.lsp_definitions()
+  end, "Go to definition")
+  map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
+  map("n", "gR", function()
+    Snacks.picker.lsp_references()
+  end, "Show references")
+  map("n", "gi", function()
+    Snacks.picker.lsp_implementations()
+  end, "Go to implementation")
+  map("n", "gt", function()
+    Snacks.picker.lsp_type_definitions()
+  end, "Go to type definition")
+  map("n", "gh", function()
+    Snacks.picker.lsp_references()
+  end, "Show references")
+  map("n", "gr", vim.lsp.buf.rename, "Rename symbol")
+  map("n", "K", vim.lsp.buf.hover, "Hover documentation")
+  map("i", "<C-s>", vim.lsp.buf.signature_help, "Signature help")
+  map({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+  map("n", "<leader>o", function()
+    Snacks.picker.lsp_symbols()
+  end, "Document symbols")
+  map("n", "<leader>ci", function()
+    Snacks.picker.lsp_incoming_calls()
+  end, "Incoming calls")
+  map("n", "<leader>co", function()
+    Snacks.picker.lsp_outgoing_calls()
+  end, "Outgoing calls")
+  map("n", "<leader>rs", "<cmd>lsp restart<CR>", "Restart LSP")
 
-  -- Change the Diagnostic symbols in the sign column (gutter)
-  local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
+  map("n", "<leader>sl", vim.diagnostic.open_float, "Line diagnostics")
+  map("n", "<leader>sb", function()
+    Snacks.picker.diagnostics_buffer()
+  end, "Buffer diagnostics")
+  map("n", "<leader>sw", function()
+    Snacks.picker.diagnostics()
+  end, "Workspace diagnostics")
+  map("n", "[e", function()
+    vim.diagnostic.jump({ count = -1, float = true })
+  end, "Prev diagnostic")
+  map("n", "]e", function()
+    vim.diagnostic.jump({ count = 1, float = true })
+  end, "Next diagnostic")
+  map("n", "[E", function()
+    vim.diagnostic.jump({ count = -1, float = true, severity = vim.diagnostic.severity.ERROR })
+  end, "Prev error")
+  map("n", "]E", function()
+    vim.diagnostic.jump({ count = 1, float = true, severity = vim.diagnostic.severity.ERROR })
+  end, "Next error")
+
+  if client and client:supports_method("textDocument/inlayHint") then
+    map("n", "<leader>ih", function()
+      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
+    end, "Toggle inlay hints")
+  end
+
+  -- gI jumps to the .ts source instead of the .d.ts declaration
+  if client and client.name == "ts_ls" then
+    map("n", "gI", function()
+      local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+      client:exec_cmd({
+        title = "Go to source definition",
+        command = "_typescript.goToSourceDefinition",
+        arguments = { params.textDocument.uri, params.position },
+      }, { bufnr = buf }, function(err, result)
+        if err or not result or #result == 0 then
+          vim.notify("No source definition found", vim.log.levels.INFO)
+          return
+        end
+        vim.lsp.util.show_document(result[1], client.offset_encoding, { focus = true })
+      end)
+    end, "Go to source definition")
+  end
+end
+
+local function config()
+  local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
   vim.diagnostic.config({
-    underline = false,
+    underline = true,
     update_in_insert = false,
-    virtual_text = false,
-    -- virtual_text = { spacing = 4, prefix = "●" },
+    virtual_text = { spacing = 4, source = "if_many", prefix = "●" },
     severity_sort = true,
+    float = { source = true },
     signs = {
-      active = true,
       text = {
         [vim.diagnostic.severity.ERROR] = signs.Error,
         [vim.diagnostic.severity.WARN] = signs.Warn,
@@ -74,80 +101,21 @@ function config()
     },
   })
 
-  -- Apply cmp capabilities to every server (merged into each config).
   vim.lsp.config("*", {
-    capabilities = capabilities,
+    capabilities = require("blink.cmp").get_lsp_capabilities({
+      workspace = { fileOperations = { didRename = true, willRename = true } },
+    }),
   })
 
-  -- lua_ls: recognize the "vim" global for Neovim config editing.
-  vim.lsp.config("lua_ls", {
-    settings = {
-      Lua = {
-        diagnostics = {
-          globals = { "vim" },
-        },
-        completion = {
-          callSnippet = "Replace",
-        },
-      },
-    },
-  })
-
-  vim.lsp.config("rust_analyzer", {
-    filetypes = { "rust" },
-  })
-
-  vim.lsp.config("svelte", {
-    on_attach = function(client, bufnr)
-      vim.api.nvim_create_autocmd("BufWritePost", {
-        pattern = { "*.js", "*.ts" },
-        callback = function(ctx)
-          client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-        end,
-      })
-    end,
-  })
-
-  vim.lsp.config("harper_ls", {
-    settings = {
-      ["harper-ls"] = {
-        userDictPath = "",
-        fileDictPath = "",
-        filetypes = { "markdown", "typescriptreact" },
-        linters = {
-          SpellCheck = true,
-          SpelledNumbers = false,
-          AnA = true,
-          SentenceCapitalization = true,
-          UnclosedQuotes = true,
-          WrongQuotes = false,
-          LongSentences = true,
-          RepeatedWords = true,
-          Spaces = true,
-          Matcher = true,
-          CorrectNumberSuffix = true,
-        },
-        codeActions = {
-          ForceStable = false,
-        },
-        markdown = {
-          IgnoreLinkTitle = false,
-        },
-        diagnosticSeverity = "hint",
-        isolateEnglish = false,
-        dialect = "American",
-      },
-    },
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("o9n_lsp_attach", { clear = true }),
+    callback = on_attach,
   })
 end
 
 return {
   "neovim/nvim-lspconfig",
   event = { "BufReadPre", "BufNewFile" },
-  dependencies = {
-    "hrsh7th/cmp-nvim-lsp",
-    { "antosha417/nvim-lsp-file-operations", config = true },
-    { "folke/neodev.nvim", opts = {} },
-  },
+  dependencies = { "saghen/blink.cmp" },
   config = config,
 }
