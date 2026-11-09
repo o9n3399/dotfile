@@ -84,7 +84,7 @@ local function on_attach(args)
 end
 
 local function config()
-  local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
+  local signs = { Error = "\u{f057} ", Warn = "\u{f071} ", Hint = "\u{f0820} ", Info = "\u{f05a} " }
   vim.diagnostic.config({
     underline = true,
     virtual_text = false,
