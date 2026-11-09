@@ -46,16 +46,16 @@ local function on_attach(args)
     Snacks.picker.diagnostics()
   end, "Workspace diagnostics")
   map("n", "[e", function()
-    vim.diagnostic.jump({ count = -1, float = true })
+    vim.diagnostic.jump({ count = -1 })
   end, "Prev diagnostic")
   map("n", "]e", function()
-    vim.diagnostic.jump({ count = 1, float = true })
+    vim.diagnostic.jump({ count = 1 })
   end, "Next diagnostic")
   map("n", "[E", function()
-    vim.diagnostic.jump({ count = -1, float = true, severity = vim.diagnostic.severity.ERROR })
+    vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR })
   end, "Prev error")
   map("n", "]E", function()
-    vim.diagnostic.jump({ count = 1, float = true, severity = vim.diagnostic.severity.ERROR })
+    vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR })
   end, "Next error")
 
   if client and client:supports_method("textDocument/inlayHint") then
@@ -84,20 +84,19 @@ local function on_attach(args)
 end
 
 local function config()
-  local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
   vim.diagnostic.config({
-    underline = true,
+    underline = false,
+    virtual_text = false,
+    signs = false,
     update_in_insert = false,
-    virtual_text = { spacing = 4, source = "if_many", prefix = "●" },
     severity_sort = true,
-    float = { source = true },
-    signs = {
-      text = {
-        [vim.diagnostic.severity.ERROR] = signs.Error,
-        [vim.diagnostic.severity.WARN] = signs.Warn,
-        [vim.diagnostic.severity.HINT] = signs.Hint,
-        [vim.diagnostic.severity.INFO] = signs.Info,
-      },
+    float = { source = true, border = "rounded" },
+    jump = {
+      on_jump = function(diagnostic, bufnr)
+        if diagnostic then
+          vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+        end
+      end,
     },
   })
 
