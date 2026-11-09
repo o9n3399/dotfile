@@ -18,6 +18,7 @@
 - Bugs: reproduce first (failing test or exact repro), fix the root cause, not the symptom
 - When I correct a mistake you could repeat, propose a one-line rule for this file
 - A typed "Other" answer in AskUserQuestion is still an answer — keep asking the remaining questions as popups
+- When a turn ends with a choice for me, ask it with AskUserQuestion (options + Recommended), never a prose question
 
 ## Response Style
 

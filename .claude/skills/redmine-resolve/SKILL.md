@@ -18,7 +18,7 @@ Do this only after the fix is committed and verified, and only when the user ask
    - Author (`author.id`) holds the `Tester` role → assign the author.
    - Otherwise → the tester who already appears in the issue's journals, else the one named by the user, else the first in `testers`. Say which rule picked them in the report.
    - Feedback with a question: still the author unless the user names someone else.
-4. Fill the custom fields that the workflow requires on Resolved (ids from project 37; a missing one makes the PUT fail with a 422 listing the field):
+4. Fill the custom fields that the workflow requires on Resolved (ids from project 37; a missing one makes the PUT fail with a 422 listing the field). Fields 4/13/38/19 exist only on the Bug/Defect tracker: on a Task Redmine drops them silently and still returns 204, so leave them out and put root cause and action in the note. Standard fields below apply to every tracker:
    - 4 `Root Causal Category`: `RC99_Others` by default; `RC05_Lack of sharing information` when the cause is missing info or handover. Reuse values seen on other issues (`GET /issues.json?project_id=<p>&status_id=*&limit=100`); the full option list needs admin and returns 403.
    - 13 `Root Causal Process`: `Coding` for a code defect, `Unit Test` for a missed test, `Integration Test` otherwise.
    - 38 `Root Causal Analysis 根本原因分析`: one or two sentences on why it happened.
@@ -37,7 +37,7 @@ curl -s -X PUT -H "X-Redmine-API-Key: $KEY" -H "Content-Type: application/json" 
 ```
 
    A successful PUT returns HTTP 204 with an empty body. A 422 body lists the missing required fields: fill them and retry once.
-7. Read the issue again and confirm status, assignee and the four fields.
+7. Read the issue again and confirm status, assignee and the four fields (only when the tracker has them).
 
 ## Rules
 

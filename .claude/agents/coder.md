@@ -12,6 +12,13 @@ skills:
   - bug-fix
   - refactor
   - syntax-optimize
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: python3 ~/.claude/hooks/script/guard-bash-write.py
+          timeout: 10
 ---
 
 # Coder Agent
@@ -37,6 +44,8 @@ You are forbidden from:
 - **Bash** is for running things: tests, tsc, docker, curl. The tool name is `Bash` (case-sensitive); `Monitor` is not available.
 - **The shell is zsh**: compare with `[[ $a == $b ]]` (`[ a == b ]` fails with `= not found`), quote globs (`--include='*.ts'`), and never keep a command in a string variable (`$CMD` is not word-split, so it runs as one missing command) — use a function or an array.
 - **Waiting for a service**: poll with a bounded loop, e.g. `for i in {1..30}; do curl -sf <health-url> > /dev/null && break; sleep 2; done`, not a bare `sleep N`.
+- **Waiting for an async job** (export, report, queue): poll its status or result endpoint in the same kind of bounded loop and break on done/failed, never `curl …; sleep 20; curl …`.
+- **Bash writes are blocked** by a hook (`sed -i`, `perl -pi`, `>`/`>>`/`tee` to a file outside `/tmp`, python `open(…,'w')`); this includes ticking plan checkboxes — use Edit.
 - **Batch**: put independent calls in one response; each response is one turn of your 80.
 
 ## Workflow

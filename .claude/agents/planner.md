@@ -5,7 +5,7 @@ tools: Agent(Explore), Read, Grep, Glob, Write, Edit, Bash(git log *), Bash(git 
 model: opus
 effort: high
 color: blue
-maxTurns: 60
+maxTurns: 80
 memory: local
 skills:
   - plan-format
@@ -39,7 +39,8 @@ You are forbidden from:
 - **Scope**: pass the repo or service path from the prompt to every search, never the home directory — home-wide searches time out. Use absolute paths for Read.
 - **Search with Grep/Glob**, not `cd …; grep …; sed -n …` chains in Bash. If Grep/Glob are unavailable, quote every glob in Bash (`--include='*.ts'`): the shell is zsh and an unquoted glob fails with `no matches found`.
 - **Read narrowly**: for a large file, Read with `offset`/`limit` around the Grep hit; read a whole file only when you will modify it.
-- **Batch**: put independent calls in one response; each response is one turn of your 60.
+- **Batch**: put independent calls in one response; each response is one turn of your 80.
+- **Live API probes**: log in once, then put every request of one probe into a single Bash call (a loop or one script), not one curl per turn.
 
 ## Workflow
 
@@ -67,7 +68,7 @@ Do your own Grep only for a single follow-up question about a file you already h
 
 ### Step 3: Write Plan
 
-By turn ~40 at the latest, stop exploring. Complete the plan file following the preloaded `plan-format` skill; anything not verified goes under Open Questions or Risks as `(unverified)`.
+By turn ~55 at the latest, stop exploring. Complete the plan file following the preloaded `plan-format` skill; anything not verified goes under Open Questions or Risks as `(unverified)`.
 
 - **Reuse first**: a plan that adds a second copy of something that exists is rejected. State what you reused and why anything new is unavoidable.
 - **API Contract**: when the task merges or replaces an API, list the fields each client reads from the old response.
