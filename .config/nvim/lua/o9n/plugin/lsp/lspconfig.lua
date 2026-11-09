@@ -1,3 +1,61 @@
+local function open_peek(item)
+  local buf = vim.fn.bufadd(item.filename)
+  vim.fn.bufload(buf)
+
+  local width = math.floor(vim.o.columns * 0.7)
+  local height = math.floor(vim.o.lines * 0.5)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2),
+    col = math.floor((vim.o.columns - width) / 2),
+    border = "rounded",
+    title = " " .. vim.fn.fnamemodify(item.filename, ":~:.") .. " ",
+    title_pos = "center",
+  })
+  vim.api.nvim_win_set_cursor(win, { item.lnum, math.max(item.col - 1, 0) })
+  vim.cmd("normal! zt")
+
+  local function close()
+    pcall(vim.api.nvim_win_close, win, true)
+  end
+  local close_keys = { "q", "<Esc>" }
+  for _, key in ipairs(close_keys) do
+    vim.keymap.set("n", key, close, { buffer = buf, nowait = true, desc = "Close peek" })
+  end
+
+  vim.api.nvim_create_autocmd("WinLeave", {
+    buffer = buf,
+    callback = function()
+      if vim.api.nvim_get_current_win() == win then
+        close()
+        return true
+      end
+    end,
+  })
+  -- the peeked buffer is a real file buffer; drop the close keys so q/<Esc> work normally later
+  vim.api.nvim_create_autocmd("WinClosed", {
+    pattern = tostring(win),
+    once = true,
+    callback = function()
+      for _, key in ipairs(close_keys) do
+        pcall(vim.keymap.del, "n", key, { buffer = buf })
+      end
+    end,
+  })
+end
+
+local function peek_definition()
+  vim.lsp.buf.definition({
+    on_list = function(list)
+      if list.items[1] then
+        open_peek(list.items[1])
+      end
+    end,
+  })
+end
+
 local function on_attach(args)
   local buf = args.buf
   local client = vim.lsp.get_client_by_id(args.data.client_id)
@@ -7,22 +65,31 @@ local function on_attach(args)
     vim.keymap.set(mode, lhs, rhs, { buffer = buf, desc = desc, nowait = true })
   end
 
+  local list_only = { auto_confirm = false }
+
   map("n", "gd", function()
-    Snacks.picker.lsp_definitions()
+    Snacks.picker.lsp_definitions(list_only)
   end, "Go to definition")
   map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
+  map("n", "gp", peek_definition, "Peek definition")
   map("n", "gR", function()
-    Snacks.picker.lsp_references()
+    Snacks.picker.lsp_references(list_only)
   end, "Show references")
   map("n", "gi", function()
-    Snacks.picker.lsp_implementations()
+    Snacks.picker.lsp_implementations(list_only)
   end, "Go to implementation")
   map("n", "gt", function()
-    Snacks.picker.lsp_type_definitions()
+    Snacks.picker.lsp_type_definitions(list_only)
   end, "Go to type definition")
   map("n", "gh", function()
-    Snacks.picker.lsp_references()
-  end, "Show references")
+    local view = require("trouble").open({ mode = "lsp_popup" })
+    if view then
+      -- start on the first location so the preview shows immediately, not on a group header
+      view:wait(function()
+        view:move({ idx = 1 })
+      end)
+    end
+  end, "LSP locations (Trouble)")
   map("n", "gr", vim.lsp.buf.rename, "Rename symbol")
   map("n", "K", vim.lsp.buf.hover, "Hover documentation")
   map("i", "<C-s>", vim.lsp.buf.signature_help, "Signature help")

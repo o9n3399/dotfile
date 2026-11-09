@@ -31,6 +31,8 @@ init.lua → o9n.core (option → keymap → autocmd) → o9n.lazy (imports plug
 | `<leader>lg` | Lazygit |
 | `gd` `gR` `gi` `gt` `gI` | Definition / references / impl / type def / TS source def |
 | `gr` `K` `<leader>ca` | Rename / hover / code action |
+| `gp` | Peek definition in a float (q/Esc closes) |
+| `gh` | All LSP locations (defs, refs, impls, types) in a Trouble popup (Esc closes) |
 | `[e` `]e` `[E` `]E` | Diagnostics / errors |
 | `<leader>sl` `sb` `sw` | Line / buffer / workspace diagnostics |
 | `]h` `[h` `<leader>h*` | Git hunks (gitsigns) |
