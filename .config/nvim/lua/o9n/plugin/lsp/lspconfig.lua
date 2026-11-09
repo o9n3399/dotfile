@@ -84,10 +84,18 @@ local function on_attach(args)
 end
 
 local function config()
+  local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
   vim.diagnostic.config({
-    underline = false,
+    underline = true,
     virtual_text = false,
-    signs = false,
+    signs = {
+      text = {
+        [vim.diagnostic.severity.ERROR] = signs.Error,
+        [vim.diagnostic.severity.WARN] = signs.Warn,
+        [vim.diagnostic.severity.HINT] = signs.Hint,
+        [vim.diagnostic.severity.INFO] = signs.Info,
+      },
+    },
     update_in_insert = false,
     severity_sort = true,
     float = { source = true, border = "rounded" },
