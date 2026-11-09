@@ -15,7 +15,6 @@ require("lazy").setup({
   { import = "o9n.plugin" },
   { import = "o9n.plugin.lsp" },
   { import = "o9n.plugin.dap" },
-  { import = "o9n.plugin.ai" },
 }, {
   checker = {
     enabled = true,

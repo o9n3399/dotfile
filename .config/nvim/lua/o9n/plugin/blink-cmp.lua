@@ -39,10 +39,9 @@ return {
     },
     signature = { enabled = true },
     sources = {
-      default = { "lazydev", "lsp", "codeium", "snippets", "path", "buffer" },
+      default = { "lazydev", "lsp", "snippets", "path", "buffer" },
       providers = {
         lazydev = { name = "LazyDev", module = "lazydev.integrations.blink", score_offset = 100 },
-        codeium = { name = "Codeium", module = "codeium.blink", async = true },
       },
     },
     cmdline = {

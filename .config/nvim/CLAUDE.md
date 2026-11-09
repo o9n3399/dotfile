@@ -4,7 +4,7 @@ Personal Neovim (0.12+) config using **lazy.nvim**. Namespace: `o9n`.
 
 ## Load Order
 ```
-init.lua → o9n.core (option → keymap → autocmd) → o9n.lazy (imports plugin/, plugin/lsp, plugin/dap, plugin/ai)
+init.lua → o9n.core (option → keymap → autocmd) → o9n.lazy (imports plugin/, plugin/lsp, plugin/dap)
 ```
 `mapleader` is `\` and is set in `core/option.lua` before lazy.nvim loads.
 
@@ -18,7 +18,7 @@ init.lua → o9n.core (option → keymap → autocmd) → o9n.lazy (imports plug
 
 ## Core Plugins
 - **snacks.nvim** — picker, explorer, input, notifier, indent, lazygit, terminal, zoom, words
-- **blink.cmp** — completion (sources: lazydev, lsp, codeium, LuaSnip, path, buffer)
+- **blink.cmp** — completion (sources: lazydev, lsp, LuaSnip, path, buffer)
 - **conform.nvim** — format on save (`:FormatToggle`, `:FormatToggle!` for buffer); prettierd → prettier, stylua, isort+black, rustfmt
 - **nvim-lint** — eslint_d, pylint
 - Commenting is native `gc` with nvim-ts-context-commentstring
