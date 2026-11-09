@@ -23,8 +23,8 @@ return {
       ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
       ["<C-e>"] = { "hide", "fallback" },
       ["<CR>"] = { "accept", "fallback" },
-      ["<C-j>"] = { "select_next", "fallback" },
-      ["<C-k>"] = { "select_prev", "fallback" },
+      ["<C-n>"] = { "select_next", "fallback" },
+      ["<C-p>"] = { "select_prev", "fallback" },
       ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
       ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
       ["<C-b>"] = { "scroll_documentation_up", "fallback" },
@@ -35,7 +35,19 @@ return {
       accept = { auto_brackets = { enabled = true } },
       documentation = { auto_show = true, auto_show_delay_ms = 200 },
       ghost_text = { enabled = true },
-      menu = { draw = { treesitter = { "lsp" } } },
+      menu = {
+        draw = {
+          treesitter = { "lsp" },
+          columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind", "source_name", gap = 2 } },
+          components = {
+            source_name = {
+              text = function(ctx)
+                return "[" .. ctx.source_name .. "]"
+              end,
+            },
+          },
+        },
+      },
     },
     signature = { enabled = true },
     sources = {
