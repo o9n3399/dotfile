@@ -8,7 +8,7 @@ local keys = {
   },
 }
 for i = 1, 9 do
-  table.insert(keys, { "<A-" .. i .. ">", "<cmd>BufferLineGoToBuffer " .. i .. "<CR>", desc = "Go to tab " .. i })
+  table.insert(keys, { "<A-" .. i .. ">", "<cmd>BufferLineGoToBuffer " .. i .. "<CR>", desc = "Go to buffer " .. i })
 end
 
 return {
@@ -19,10 +19,16 @@ return {
   keys = keys,
   opts = {
     options = {
-      mode = "tabs",
-      separator_style = "slant",
-      always_show_bufferline = false,
+      mode = "buffers",
+      separator_style = "thin",
       diagnostics = "nvim_lsp",
     },
+    highlights = function(defaults)
+      local hl = vim.deepcopy(defaults.highlights)
+      for _, group in pairs(hl) do
+        group.bg = "NONE"
+      end
+      return hl
+    end,
   },
 }
