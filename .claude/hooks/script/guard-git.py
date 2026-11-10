@@ -25,6 +25,40 @@ def current_branch():
     ).stdout.strip()
 
 
+def commit_repo():
+    m = re.search(r"\bgit\s+-C\s+(['\"]?)([^\s'\";&|]+)\1\s+commit\b", cmd)
+    if m:
+        return m.group(2)
+    m = re.search(r"\bcd\s+(['\"]?)([^\s'\";&|]+)\1[^\n]*?\bgit\s+commit\b", cmd)
+    return m.group(2) if m else cwd
+
+
+def git_out(repo, *args, timeout=10):
+    return subprocess.run(["git", "-C", repo or ".", *args], capture_output=True, text=True, timeout=timeout)
+
+
+def behind_upstream(repo):
+    if git_out(repo, "rev-parse", "--abbrev-ref", "@{u}").returncode != 0:
+        return 0
+    try:
+        if git_out(repo, "fetch", "-q", timeout=30).returncode != 0:
+            return 0
+    except subprocess.TimeoutExpired:
+        return 0
+    out = git_out(repo, "rev-list", "--count", "HEAD..@{u}").stdout.strip()
+    return int(out) if out.isdigit() else 0
+
+
+commit = re.search(r"\bgit\s+(-C\s+\S+\s+)?commit\b", cmd)
+if commit and not re.search(r"\bgit\s+(-C\s+\S+\s+)?pull\s+--ff-only\b", cmd[:commit.start()]):
+    repo = commit_repo()
+    n = behind_upstream(repo)
+    if n:
+        block(f"{repo or 'repo'} is {n} commit(s) behind its upstream. Run `git pull --ff-only` before committing "
+              "(git-agent Step 2); it is allowed even when the brief says \"Do NOT run git pull\". "
+              "If --ff-only is refused, do not commit: report the error.")
+
+
 if re.search(r"\bgit\s+commit\b", cmd) and re.search(r"co-authored-by", cmd, re.I):
     block("Co-Authored-By lines are not allowed in commit messages")
 

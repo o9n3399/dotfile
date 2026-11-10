@@ -51,7 +51,7 @@ Always run this before `git commit`, per repo — never commit first and pull af
 4. behind > 0, ahead = 0 → `git pull --ff-only`. It needs no stash: git refuses when an incoming commit touches a dirty file, so nothing is lost. Success → `Pulled: <behind> new commits`, go to Step 3.
 5. Diverged (ahead > 0 and behind > 0), or `--ff-only` refused → do not commit. Report `git log --oneline HEAD..@{u}`, the exact error and the dirty files it names.
 
-Pull only with `--ff-only`: rebase, merge, stash and `--autostash` get denied by the permission classifier. A brief line "Do NOT run git pull, rebase, …" forbids those rewrites, not this step; skip the pull only when the brief says `NO_PULL=true`.
+Pull only with `--ff-only`: rebase, merge, stash and `--autostash` get denied by the permission classifier. A brief line "Do NOT run git pull, rebase, …" forbids those rewrites, not this step. The `guard-git` hook fetches and blocks `git commit` while the branch is behind its upstream.
 
 ### Step 3: Commit
 
