@@ -2,7 +2,7 @@
 name: planner
 description: Use this agent PROACTIVELY before any non-trivial code change. It explores the codebase and writes an implementation plan to .dev-plan/<slug>.md. Read-only on source code.
 tools: Agent(Explore), Read, Grep, Glob, Write, Edit, Bash(git log *), Bash(git status), Bash(git show *), Bash(git branch *), Bash(ls *)
-model: fable
+model: opus
 effort: high
 color: blue
 maxTurns: 80
