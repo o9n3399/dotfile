@@ -10,7 +10,7 @@ A `/dev*` run goes end to end. It stops only at the points below, and every stop
 ## Stop points
 
 1. Plan approval — only under `--ask` and in `/dev-plan`; at most once per plan. After `Revise`, ask again only if the plan's Steps or Risks changed.
-2. Blocking Open Questions from the planner or explorer (under `--auto`, auto-answered).
+2. Blocking Open Questions from the planner or explorer (auto-answered with the recommended candidate unless `--no-auto`).
 3. Ship — only under `--ask`.
 4. Branch Check: a repo off its base branch.
 5. Migration, DB delete or write, a write on synced live data, a real secret in the diff.
@@ -23,7 +23,8 @@ Not stop points — list them in the summary and go on: format- or doc-only find
 
 - **default = `--yes`**: skip plan approval (still show the plan summary) and ship as `Commit only`. Passing `--yes` changes nothing. `/dev-plan` and `/dev-explore` are excluded — they always end with a popup.
 - **`--ask`**: ask plan approval and Ship.
-- **`--auto`**: also auto-pick the recommended answer to Open Questions and record them under `## Assumptions`.
+- **default auto-answer**: pick the recommended answer to Open Questions and record them under `## Assumptions`. Passing `--auto` changes nothing.
+- **`--no-auto`**: ask Open Questions as popups instead.
 - **`--push`**: ship as `Commit + push + promote staging` (service repos; web: `Commit + push <base>`). In `/dev-redmine` it means push + resolve. Never inferred from anything but the user's own message.
 
 ## Standard options

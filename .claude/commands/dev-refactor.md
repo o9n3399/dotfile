@@ -1,6 +1,6 @@
 ---
-description: "Refactor, behavior kept: green baseline → small steps → review → commit · --ask: ask approval/commit · --lite: sonnet"
-argument-hint: [scope and goal] [--ask] [--lite]
+description: "Refactor, behavior kept: green baseline → small steps → review → commit · --ask: ask approval/commit · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: [scope and goal] [--ask] [--lite] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -21,7 +21,7 @@ Every step MUST be delegated via the Agent tool. Every planner/coder/reviewer pr
 - Pushing — this command only commits
 - Stopping or asking outside the stop points of skill `dev-pipeline-stops`, or ending a turn with a prose question — every question is an AskUserQuestion popup
 
-Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the approval questions in Step 2 and Step 7; `--ask` asks both.
+Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the approval questions in Step 2 and Step 7; `--ask` asks both. `--no-auto` asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
 
 If the arguments contain `--lite` (small, low-risk refactors), strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 
@@ -41,7 +41,7 @@ Launch both agents in the same message — they are independent:
 
 **Fail-closed guardrail**: If the baseline is not PASS, show failures and stop — refactoring on red hides regressions.
 
-**Open Questions**: if the planner reports blocking questions, ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run only the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
+**Open Questions**: if the planner reports blocking questions, pick the planner's recommended candidate (else the first) for each and re-run only the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>` appended to the same prompt; list every auto-chosen answer in the summary. Under `--no-auto`, ask them with AskUserQuestion instead (one question each, with the planner's candidate answers as options) and re-run only the planner with `Answers: <answers>`. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 2: Approve
 

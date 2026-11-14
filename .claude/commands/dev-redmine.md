@@ -1,6 +1,6 @@
 ---
-description: "Redmine issues: plan → fix → test → commit develop · --push: push + staging + resolve · --no-resolve: skip resolve · --ask: ask approval/push · --lite: sonnet"
-argument-hint: <issue id or URL> [<id> ...] [--ask] [--push] [--lite] [--no-resolve]
+description: "Redmine issues: plan → fix → test → commit develop · --push: push + staging + resolve · --no-resolve: skip resolve · --ask: ask approval/push · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: <issue id or URL> [<id> ...] [--ask] [--push] [--lite] [--no-resolve] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -32,6 +32,7 @@ Flags follow skill `dev-pipeline-stops`; never stop or ask outside its stop poin
 - **`--push`**: counts as the explicit push instruction; Step 7 pushes and resolves without asking. Without `--push` or `--ask`, Step 7 keeps the commit local.
 - **`--lite`**: pass `model: sonnet` on every planner and reviewer Agent call.
 - **`--no-resolve`**: stop after the push, skip Step 8.
+- **`--no-auto`**: asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
 
 ## Cost Rules
 
@@ -53,7 +54,7 @@ Agent(subagent_type: planner, prompt: "<Mode: bug-fix. if the tracker is Bug> Pl
 
 **Fail-closed guardrail**: no plan path, or (Bug) no Reproduction or Root Cause → skip as in the workflow rule above.
 
-**Open Questions**: ask each with AskUserQuestion (candidates as options), re-run the planner with `Answers: <answers>`. Never approve a plan with blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
+**Open Questions**: if the planner reports blocking questions, pick the planner's recommended candidate (else the first) for each and re-run the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>` appended to the same prompt; list every auto-chosen answer in the summary. Under `--no-auto`, ask them with AskUserQuestion instead (one question each, with the planner's candidate answers as options) and re-run the planner with `Answers: <answers>`. Never approve a plan with blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 3: Approve
 

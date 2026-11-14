@@ -1,6 +1,6 @@
 ---
-description: "Run a plan through /dev (code → review → test → UI → commit) · --only: coder only · --ask: ask ship · --push: push + staging · --lite: sonnet · --auto: auto-answer"
-argument-hint: [plan-path] [--only] [--lite] [--ask] [--push] [--auto]
+description: "Run a plan through /dev (code → review → test → UI → commit) · --only: coder only · --ask: ask ship · --push: push + staging · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: [plan-path] [--only] [--lite] [--ask] [--push] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -33,7 +33,7 @@ If still empty, tell the user to run `/dev-plan` first and stop. (Glob/Grep skip
 
 ### Step 2: Run
 
-Without `--only`: invoke Skill `dev` with args `<plan-path>` plus every flag given except `--only` (`--lite`, `--ask`, `--push`, `--auto`), and follow it to the end. Stop here — the rest of this file is for `--only`.
+Without `--only`: invoke Skill `dev` with args `<plan-path>` plus every flag given except `--only` (`--lite`, `--ask`, `--push`, `--no-auto`), and follow it to the end. Stop here — the rest of this file is for `--only`.
 
 ### Step 3 (`--only`): Invoke Coder
 

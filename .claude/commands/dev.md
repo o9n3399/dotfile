@@ -1,6 +1,6 @@
 ---
-description: "Plan → code → review → test → UI → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet · --auto: auto-answer"
-argument-hint: [task description | .dev-plan/<slug>.md] [--lite] [--ask] [--push] [--auto]
+description: "Plan → code → review → test → UI → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: [task description | .dev-plan/<slug>.md] [--lite] [--ask] [--push] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -29,9 +29,7 @@ Strip every flag from the task text; `<task>` below means the text without flags
 - **`--ask`**: ask the Step 2 approval and the Step 7 Ship question.
 - **`--push`**: answer Step 7 with `Commit + push + promote staging` (web: `Commit + push <base>`). Only from the user's own message.
 - **Given plan**: if `<task>` names an existing plan file (a `.dev-plan/*.md` path, or `--plan <path>`), that is `<plan-path>` — skip Step 1 (see Step 0). Any other text in `<task>` is extra context for the coder.
-- **`--auto`**: nothing asks the user:
-  - Open Questions → pick the planner's recommended candidate (else the first) for each and re-run the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>`.
-  - Every other AskUserQuestion point (Branch Check, loops out of iterations, `Live API check: no`) → stop there instead, leave the changes uncommitted and report why.
+- **`--no-auto`**: asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
 
 ## Cost Rules
 
@@ -56,7 +54,7 @@ Agent(subagent_type: planner, prompt: "Write an implementation plan for: <task>"
 
 **Fail-closed guardrail**: No plan path → report and stop.
 
-**Open Questions**: if the planner reports blocking questions (under `--auto`, see Flags), ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
+**Open Questions**: if the planner reports blocking questions, pick the planner's recommended candidate (else the first) for each and re-run the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>` appended to the same prompt; list every auto-chosen answer in the summary. Under `--no-auto`, ask them with AskUserQuestion instead (one question each, with the planner's candidate answers as options) and re-run the planner with `Answers: <answers>`. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 2: Approve
 
@@ -66,7 +64,7 @@ Read the plan file, show Summary / Proposed Change / Steps / Risks (plus the pat
 
 Before any code change, Agent(subagent_type: git-agent, model: haiku, prompt: "Report only — do not commit, stage, switch or checkout. For each repo: <absolute repo paths from the plan>, run `git -C <repo> branch --show-current` and `git -C <repo> status --short`, and report `<repo>: current=<branch> base=<develop for service repos, staging for web, per commit-convention> dirty=<files or none>`."). The reported `base` of each repo is `<base branch>` for every later step.
 - Every repo on its base → Step 3
-- A repo off its base (e.g. service on `staging`, or on a `feat/*` branch) → never switch it yourself or via an agent (the dev container mounts the live tree). AskUserQuestion: `I switched it, re-check`, `Continue on <current>` (record it in the summary), `Cancel`. Under `--auto`, stop and report
+- A repo off its base (e.g. service on `staging`, or on a `feat/*` branch) → never switch it yourself or via an agent (the dev container mounts the live tree). AskUserQuestion: `I switched it, re-check`, `Continue on <current>` (record it in the summary), `Cancel`
 - Dirty files outside the plan → show them; the coder and git-agent must leave them out
 
 ### Step 3: Implement
@@ -124,7 +122,7 @@ No PR option: the remotes are GitLab without `gh`. Open a PR/MR only when the us
 ## Output Summary
 
 - Plan path and steps completed
-- Under `--auto`: every auto-chosen answer, so the user can check the assumptions
+- Every auto-chosen Open Question answer, so the user can check the assumptions
 - Live API check, review verdict (with remaining LOW findings), test result with `Scope` and pre-existing failures, UI verify result
 - `Created data:` from ui-verifier, so the user can clean it up
 - Branch Check result (any repo kept off its base)

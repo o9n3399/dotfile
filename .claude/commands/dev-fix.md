@@ -1,6 +1,6 @@
 ---
-description: "Bug fix: red test → root-cause fix → review → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet"
-argument-hint: [bug description] [--ask] [--push] [--lite]
+description: "Bug fix: red test → root-cause fix → review → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: [bug description] [--ask] [--push] [--lite] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -21,7 +21,7 @@ Every step MUST be delegated via the Agent tool (or SendMessage to the existing 
 - Pushing without `--push` or an explicit Ship answer (Step 7)
 - Stopping or asking outside the stop points of skill `dev-pipeline-stops`, or ending a turn with a prose question — every question is an AskUserQuestion popup
 
-Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the Step 2 approval and answer Step 7 with `Commit only`; `--ask` asks both; `--push` answers Step 7 with `Commit + push + promote staging` (web: `Commit + push <base>`), only from the user's own message.
+Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the Step 2 approval and answer Step 7 with `Commit only`; `--ask` asks both; `--push` answers Step 7 with `Commit + push + promote staging` (web: `Commit + push <base>`), only from the user's own message. `--no-auto` asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
 
 ## Cost Rules
 
@@ -39,7 +39,7 @@ Agent(subagent_type: planner, prompt: "Mode: bug-fix. Plan a fix for: <bug>"). C
 
 **Fail-closed guardrail**: If the plan has no Reproduction or Root Cause, or the planner reports it cannot reproduce, show its output and stop.
 
-**Open Questions**: if the planner reports blocking questions, ask them with AskUserQuestion (one question each, with the planner's candidate answers as options), then re-run the planner with `Answers: <answers>` appended to the same prompt. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
+**Open Questions**: if the planner reports blocking questions, pick the planner's recommended candidate (else the first) for each and re-run the planner with `Answers (auto-chosen; record each under ## Assumptions in the plan): <answers>` appended to the same prompt; list every auto-chosen answer in the summary. Under `--no-auto`, ask them with AskUserQuestion instead (one question each, with the planner's candidate answers as options) and re-run the planner with `Answers: <answers>`. Never approve a plan that still has blocking questions. A typed answer (the free-text "Other" option) is still a popup answer: record it as the user's decision and ask every remaining question with AskUserQuestion too — never switch to plain chat text unless the user dismisses the popup or asks to discuss.
 
 ### Step 2: Approve
 
