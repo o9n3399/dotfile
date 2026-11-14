@@ -18,6 +18,11 @@ hooks:
         - type: command
           command: python3 ~/.claude/hooks/script/guard-write-scope.py .dev-plan agent-memory-local
           timeout: 5000
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: python3 ~/.claude/hooks/script/guard-bash-write.py
+          timeout: 10
 ---
 
 # Planner Agent

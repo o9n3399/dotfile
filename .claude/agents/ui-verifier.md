@@ -4,7 +4,7 @@ description: Use this agent after frontend changes pass tests, to drive the runn
 disallowedTools: NotebookEdit, Agent
 model: sonnet
 color: cyan
-maxTurns: 40
+maxTurns: 60
 memory: local
 hooks:
   PreToolUse:
@@ -13,6 +13,11 @@ hooks:
         - type: command
           command: python3 ~/.claude/hooks/script/guard-write-scope.py agent-memory-local
           timeout: 5000
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: python3 ~/.claude/hooks/script/guard-bash-write.py
+          timeout: 10
 ---
 
 # UI Verifier Agent

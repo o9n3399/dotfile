@@ -36,4 +36,19 @@ if reason:
     print(f"Blocked by guard-bash-write ({reason}): change repo files with Edit (after Read) or Write for a new file. "
           "Temp files under /tmp are fine; run formatters or generators directly.", file=sys.stderr)
     sys.exit(2)
+
+# A literal password in the command line ends up in the transcript; a $VAR or '"$VAR"' splice does not.
+if re.search(r"\\?\"password\\?\"\s*:\s*\\?\"(?![$'\\])[^\"\\]+", cmd, re.I):
+    print("Blocked by guard-bash-write (literal password): read credentials from the env file or env vars "
+          "named in the project's CLAUDE.md into a shell variable and splice it, e.g. "
+          "'{\"password\":\"'\"$APP_PASS\"'\"}'.", file=sys.stderr)
+    sys.exit(2)
+
+# A long fixed sleep outside a loop wastes a turn; poll with a bounded loop instead.
+if not re.search(r"\b(for|while|until)\b", bare):
+    m = re.search(r"(?:^|[;&|(]\s*|\s)sleep\s+(\d+)", bare)
+    if m and int(m.group(1)) >= 5:
+        print(f"Blocked by guard-bash-write (sleep {m.group(1)} outside a loop): poll the condition in a bounded loop, "
+              "e.g. 'for i in $(seq 30); do curl -sf URL && break; sleep 2; done'.", file=sys.stderr)
+        sys.exit(2)
 sys.exit(0)
