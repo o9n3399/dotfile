@@ -1,6 +1,6 @@
 ---
-description: "Redmine issues: plan → fix → test → commit develop · --push: push + staging + resolve · --no-resolve: skip resolve · --ask: ask approval/push · --lite: sonnet · --no-auto: ask open questions"
-argument-hint: <issue id or URL> [<id> ...] [--ask] [--push] [--lite] [--no-resolve] [--no-auto]
+description: "Redmine issues: plan → fix → test → commit develop · --push: push + staging + resolve · --to demo,uat: also pick to these branches · --no-resolve: skip resolve · --ask: ask approval/push · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: <issue id or URL> [<id> ...] [--ask] [--push] [--to <branch,...>] [--lite] [--no-resolve] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -30,6 +30,7 @@ Flags follow skill `dev-pipeline-stops`; never stop or ask outside its stop poin
 - **Default (`--yes`)**: skip the plan approval (Step 3), still show the plan summary. Passing `--yes` changes nothing.
 - **`--ask`**: ask the plan approval (Step 3) and the push question (Step 7).
 - **`--push`**: counts as the explicit push instruction; Step 7 pushes and resolves without asking. Without `--push` or `--ask`, Step 7 keeps the commit local.
+- **`--to <branch,...>`**: also promote to these branches after staging (`staging|demo|uat`, comma separated, service repos only). Needs `--push` or a push answer; ignored otherwise. Only from the user's own message, never inferred or defaulted.
 - **`--lite`**: pass `model: sonnet` on every planner and reviewer Agent call.
 - **`--no-resolve`**: stop after the push, skip Step 8.
 - **`--no-auto`**: asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
@@ -92,11 +93,13 @@ On a push answer, per backend repo, Agent(subagent_type: git-agent, model: sonne
 
 Web: Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Push `staging` (plain push).").
 
+Each branch in `--to` other than `staging`, in the given order, repeats the staging promotion: `git fetch -q origin`, `git cherry origin/<branch> <sha>` (`-` means already applied, skip), cherry-pick onto a temporary worktree of `origin/<branch>`, conflict → `cherry-pick --abort`, report the files and stop the batch, test-runner on the worktree, push only on `PASS`, then remove and prune the worktree. A branch outside `staging|demo|uat` stops the run before any push. Skip the web repo.
+
 `Push only` and `--no-resolve` skip Step 8. `Stop here` records the issue as `committed, not pushed` and continues with the next issue.
 
 ### Step 8: Resolve on Redmine
 
-Only after Step 7 pushed both develop and staging. Agent(subagent_type: general-purpose, model: sonnet, prompt: "Follow the redmine-resolve skill for issue <id>: status Resolved, assign per the skill (author if a Tester, else a project tester from the members cache — never ask), fill root cause category/process, root cause analysis and correct actions from the plan and commit shas, set due_date and estimated_hours if empty (estimate from the work: Defect ≥ 1h, Task/other ≥ 2h; work done: <plan path, repos and files changed>), add a note in Vietnamese with root cause, action, commit shas per repo and how it was verified. Never put the API key, passwords or internal hostnames in the note. Read the issue again afterwards and report status, assignee (and which rule picked them), estimate with its basis, any child issue touched, and the four fields.").
+Only after Step 7 pushed develop, staging and every `--to` branch. Agent(subagent_type: general-purpose, model: sonnet, prompt: "Follow the redmine-resolve skill for issue <id>: status Resolved, assign per the skill (author if a Tester, else a project tester from the members cache — never ask), fill root cause category/process, root cause analysis and correct actions from the plan and commit shas, set due_date and estimated_hours if empty (estimate from the work: Defect ≥ 1h, Task/other ≥ 2h; work done: <plan path, repos and files changed>), add a note in Vietnamese with root cause, action, commit shas per repo and how it was verified. Never put the API key, passwords or internal hostnames in the note. Read the issue again afterwards and report status, assignee (and which rule picked them), estimate with its basis, any child issue touched, and the four fields.").
 
 A failed PUT (422 etc.) → one retry with the missing fields, then report the error and continue; the code is already pushed.
 

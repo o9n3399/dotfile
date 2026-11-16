@@ -1,6 +1,6 @@
 ---
-description: "Bug fix: red test → root-cause fix → review → commit · --ask: ask approval/ship · --push: push + staging · --lite: sonnet · --no-auto: ask open questions"
-argument-hint: [bug description] [--ask] [--push] [--lite] [--no-auto]
+description: "Bug fix: red test → root-cause fix → review → commit · --ask: ask approval/ship · --push: push + staging · --to demo,uat: also pick to these branches · --lite: sonnet · --no-auto: ask open questions"
+argument-hint: [bug description] [--ask] [--push] [--to <branch,...>] [--lite] [--no-auto]
 allowed-tools:
   - Agent
   - SendMessage
@@ -25,6 +25,7 @@ Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the Step 2 ap
 
 ## Cost Rules
 
+- **`--to <branch,...>`**: as in `/dev` Step 7 (`staging|demo|uat`, service repos, needs `--push` or a push answer, never inferred).
 - **`--lite`** (small, low-risk changes): strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 - **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage (still prefixed `Mode: bug-fix.`) instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
 - **Unfinished coder**: if the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." before testing — at most twice, then report the remaining steps and stop.
@@ -78,7 +79,7 @@ Only when the fix changes a rule or behavior that a `docs/*.md`, `CLAUDE.md` or 
 ### Step 7: Ship
 
 Under `--push`, use `Commit + push + promote staging` (web: `Commit + push <base>`) without asking. Under `--ask`, AskUserQuestion: `Commit only`, `Commit + push <base>`, `Commit + push + promote staging` (service repos only), `Stop (leave uncommitted)`. Otherwise use `Commit only` without asking.
-Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked)."). A push answer → the push and promotion of `/dev` Step 7.
+Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked)."). A push answer → the push, promotion and `--to` branches of `/dev` Step 7.
 
 ## Output Summary
 
