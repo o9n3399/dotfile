@@ -18,9 +18,9 @@ Accounts are named by their email.
 Usage:
   switch-account.sh -w, --switch [email]
                                     switch to an account, or to the next saved one
-                                    with an unexpired token when no email is given;
-                                    an explicit email is never skipped; any unique part of the
-                                    email works, e.g. "viet" or "vti"
+                                    with a refresh token when no email is given
+                                    (an expired access token is fine, claude refreshes it);
+                                    any unique part of the email works, e.g. "viet" or "vti"
   switch-account.sh [email]         same as --switch
   switch-account.sh -S, --save      save the currently logged-in account
   switch-account.sh -s, --status    list saved accounts with their plan usage,
@@ -55,10 +55,6 @@ current() { [[ -f $current_file ]] && cat "$current_file" || true; }
 # Claude Code blanks the tokens after a failed refresh; such a login must never be saved.
 active_is_valid() { jq -e '(.claudeAiOauth.refreshToken // "") != ""' "$cred" > /dev/null 2>&1; }
 saved_is_valid() { jq -e '(.refreshToken // "") != ""' "$store/$1.credentials.json" > /dev/null 2>&1; }
-saved_is_fresh() {
-  jq -e --argjson now "$(date +%s)" '(.expiresAt // 0) / 1000 > $now + 60' \
-    "$store/$1.credentials.json" > /dev/null 2>&1
-}
 
 active_uuid() { jq -r '.oauthAccount.accountUuid // empty' "$cfg" 2>/dev/null || true; }
 active_email() { jq -r '.oauthAccount.emailAddress // empty' "$cfg" 2>/dev/null || true; }
@@ -206,16 +202,13 @@ switch_to() {
     done
     for (( i = 1; i < n; i++ )); do
       candidate=${accounts[$(( (start + i) % n ))]}
-      if ! saved_is_valid "$candidate"; then
-        warn "skipping '$candidate': no valid login"
-      elif ! saved_is_fresh "$candidate"; then
-        warn "skipping '$candidate': token expired"
-      else
+      if saved_is_valid "$candidate"; then
         target=$candidate
         break
       fi
+      warn "skipping '$candidate': no valid login"
     done
-    [[ -n $target ]] || die "no other account has an unexpired token; pick one explicitly with: switch-account.sh <email>"
+    [[ -n $target ]] || die "no other account has a valid login, /login and run --save"
   fi
   [[ $target != "$cur" ]] || { echo "Already on '$cur'"; exit 0; }
   saved_is_valid "$target" || die "account '$target' has no valid login, /login with it and run --save"
