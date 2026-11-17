@@ -9,6 +9,8 @@ current_file="$store/current"
 usage_url="https://api.anthropic.com/api/oauth/usage"
 token_url="${CLAUDE_OAUTH_TOKEN_URL:-https://platform.claude.com/v1/oauth/token}"
 client_id="9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+# The token endpoint answers curl's default User-Agent with 429; Claude Code sends axios'.
+token_user_agent="axios/1.15.2"
 
 umask 077
 
@@ -69,6 +71,7 @@ saved_is_fresh() {
 # Returns 0 usable, 1 dead (refresh token rejected), 2 could not verify.
 ensure_live() {
   local file="$store/$1.credentials.json" body code tmp
+  refresh_error=""
   saved_is_valid "$1" || return 1
   saved_is_fresh "$1" && return 0
   body=$(mktemp "$store/.refresh.XXXXXX")
@@ -78,7 +81,8 @@ ensure_live() {
       + (if (.scopes | type) == "array" and (.scopes | length) > 0
          then {scope: (.scopes | join(" "))} else {} end)' "$file" \
     | curl -s --max-time 30 -o "$body" -w '%{http_code}' \
-        -H 'Content-Type: application/json' --data-binary @- "$token_url") || code=000
+        -A "$token_user_agent" -H 'Content-Type: application/json' \
+        --data-binary @- "$token_url") || code=000
   if [[ $code == 200 ]] && jq -e '(.access_token // "") != "" and (.expires_in | type) == "number"' "$body" > /dev/null 2>&1; then
     tmp=$(mktemp "$file.XXXXXX")
     jq --slurpfile r "$body" --argjson now "$(date +%s%3N)" '
@@ -100,6 +104,7 @@ ensure_live() {
     rm -f "$body"
     return 1
   fi
+  refresh_error="HTTP $code $(jq -r '.error | if type == "object" then .type // .message else . end // empty' "$body" 2>/dev/null | head -c 80)"
   rm -f "$body"
   return 2
 }
@@ -253,7 +258,7 @@ switch_to() {
       ensure_live "$candidate" && { target=$candidate; break; }
       case $? in
         1) warn "skipping '$candidate': login revoked, /login with it and run --save" ;;
-        *) warn "skipping '$candidate': could not refresh its token (network?)" ;;
+        *) warn "skipping '$candidate': could not refresh its token ($refresh_error)" ;;
       esac
     done
     [[ -n $target ]] || die "no other account has a working login, /login and run --save"
@@ -262,7 +267,7 @@ switch_to() {
   if [[ -n $query ]]; then
     ensure_live "$target" || case $? in
       1) die "account '$target' login is revoked, /login with it and run --save" ;;
-      *) die "could not refresh the token of '$target' (network?), try again" ;;
+      *) die "could not refresh the token of '$target' ($refresh_error), try again" ;;
     esac
   fi
 
