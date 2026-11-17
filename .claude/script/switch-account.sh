@@ -7,6 +7,8 @@ cred="$claude_dir/.credentials.json"
 cfg="$HOME/.claude.json"
 current_file="$store/current"
 usage_url="https://api.anthropic.com/api/oauth/usage"
+token_url="${CLAUDE_OAUTH_TOKEN_URL:-https://platform.claude.com/v1/oauth/token}"
+client_id="9d1c250a-e61b-44d9-88ed-5944d1962f5e"
 
 umask 077
 
@@ -18,8 +20,7 @@ Accounts are named by their email.
 Usage:
   switch-account.sh -w, --switch [email]
                                     switch to an account, or to the next saved one
-                                    with a refresh token when no email is given
-                                    (an expired access token is fine, claude refreshes it);
+                                    with a working login when no email is given;
                                     any unique part of the email works, e.g. "viet" or "vti"
   switch-account.sh [email]         same as --switch
   switch-account.sh -S, --save      save the currently logged-in account
@@ -36,8 +37,10 @@ Notes:
   - Only the Claude login (claudeAiOauth) is swapped; MCP OAuth tokens stay shared.
   - Never copy saved accounts to another machine: each machine needs its own /login,
     a shared refresh token gets invalidated as soon as one machine refreshes it.
+  - Switching to an account whose access token expired refreshes it first; a revoked
+    login is skipped (or refused when named) and must be redone with /login + --save.
   - Usage is shown only while an account's access token is still valid (~8h after
-    last use); expired tokens are never refreshed by this script.
+    last use); --status never refreshes tokens.
   - Saved accounts live in $store/
 EOF
 }
@@ -55,6 +58,51 @@ current() { [[ -f $current_file ]] && cat "$current_file" || true; }
 # Claude Code blanks the tokens after a failed refresh; such a login must never be saved.
 active_is_valid() { jq -e '(.claudeAiOauth.refreshToken // "") != ""' "$cred" > /dev/null 2>&1; }
 saved_is_valid() { jq -e '(.refreshToken // "") != ""' "$store/$1.credentials.json" > /dev/null 2>&1; }
+saved_is_fresh() {
+  jq -e --argjson now "$(date +%s)" '(.expiresAt // 0) / 1000 > $now + 60' \
+    "$store/$1.credentials.json" > /dev/null 2>&1
+}
+
+# A saved refresh token can be revoked server-side (rotated by another session or machine),
+# which no local field shows, so an expired login is proven by refreshing it.
+# Refreshing rotates the token, so the new pair is written back immediately.
+# Returns 0 usable, 1 dead (refresh token rejected), 2 could not verify.
+ensure_live() {
+  local file="$store/$1.credentials.json" body code tmp
+  saved_is_valid "$1" || return 1
+  saved_is_fresh "$1" && return 0
+  body=$(mktemp "$store/.refresh.XXXXXX")
+  # The request goes through stdin so the refresh token never shows up in the process list.
+  code=$(jq -c --arg cid "$client_id" '
+      {grant_type: "refresh_token", refresh_token: .refreshToken, client_id: $cid}
+      + (if (.scopes | type) == "array" and (.scopes | length) > 0
+         then {scope: (.scopes | join(" "))} else {} end)' "$file" \
+    | curl -s --max-time 30 -o "$body" -w '%{http_code}' \
+        -H 'Content-Type: application/json' --data-binary @- "$token_url") || code=000
+  if [[ $code == 200 ]] && jq -e '(.access_token // "") != "" and (.expires_in | type) == "number"' "$body" > /dev/null 2>&1; then
+    tmp=$(mktemp "$file.XXXXXX")
+    jq --slurpfile r "$body" --argjson now "$(date +%s%3N)" '
+      $r[0] as $r
+      | .accessToken = $r.access_token
+      | .refreshToken = ($r.refresh_token // .refreshToken)
+      | .expiresAt = ($now + $r.expires_in * 1000)
+      | if ($r.refresh_token_expires_in | type) == "number"
+        then .refreshTokenExpiresAt = ($now + $r.refresh_token_expires_in * 1000) else . end' \
+      "$file" > "$tmp"
+    mv "$tmp" "$file"
+    rm -f "$body"
+    return 0
+  fi
+  if [[ $code == 400 || $code == 401 ]] && jq -e '.error == "invalid_grant"' "$body" > /dev/null 2>&1; then
+    tmp=$(mktemp "$file.XXXXXX")
+    jq '.accessToken = "" | .refreshToken = ""' "$file" > "$tmp"
+    mv "$tmp" "$file"
+    rm -f "$body"
+    return 1
+  fi
+  rm -f "$body"
+  return 2
+}
 
 active_uuid() { jq -r '.oauthAccount.accountUuid // empty' "$cfg" 2>/dev/null || true; }
 active_email() { jq -r '.oauthAccount.emailAddress // empty' "$cfg" 2>/dev/null || true; }
@@ -202,16 +250,21 @@ switch_to() {
     done
     for (( i = 1; i < n; i++ )); do
       candidate=${accounts[$(( (start + i) % n ))]}
-      if saved_is_valid "$candidate"; then
-        target=$candidate
-        break
-      fi
-      warn "skipping '$candidate': no valid login"
+      ensure_live "$candidate" && { target=$candidate; break; }
+      case $? in
+        1) warn "skipping '$candidate': login revoked, /login with it and run --save" ;;
+        *) warn "skipping '$candidate': could not refresh its token (network?)" ;;
+      esac
     done
-    [[ -n $target ]] || die "no other account has a valid login, /login and run --save"
+    [[ -n $target ]] || die "no other account has a working login, /login and run --save"
   fi
   [[ $target != "$cur" ]] || { echo "Already on '$cur'"; exit 0; }
-  saved_is_valid "$target" || die "account '$target' has no valid login, /login with it and run --save"
+  if [[ -n $query ]]; then
+    ensure_live "$target" || case $? in
+      1) die "account '$target' login is revoked, /login with it and run --save" ;;
+      *) die "could not refresh the token of '$target' (network?), try again" ;;
+    esac
+  fi
 
   # Persist the current account first: its refresh token may have rotated since the last save.
   if active_is_valid; then
