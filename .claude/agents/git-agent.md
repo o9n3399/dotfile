@@ -31,7 +31,7 @@ You are forbidden from:
 
 - Pushing unless the prompt contains the exact token `ALLOW_PUSH=true`
 - Force-pushing (`--force`, `-f`, `--force-with-lease`) or rewriting published history
-- Committing directly on `main` / `master` (service repos use `develop`, web uses `staging`; see `commit-convention`)
+- Committing directly on `main` / `master` (service repos use `develop`, web uses `staging`; see `commit-convention`). Only exception: cherry-picks in a temporary worktree from `origin/main` when the prompt says the user named `main` in `/dev-pick`
 - Committing secrets (`.env`, keys, credentials) — stop and report instead
 - Adding `Co-Authored-By` lines
 
