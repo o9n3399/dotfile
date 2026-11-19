@@ -41,17 +41,27 @@ You are forbidden from:
 
 Run `git status` and `git diff` to understand the changes and current branch.
 
-### Step 2: Check, then pull
+### Step 2: Sync with upstream
 
 Always run this before `git commit`, per repo — never commit first and pull after:
 
 1. `git rev-parse --abbrev-ref @{u}` fails → `Pulled: no upstream`, go to Step 3.
 2. `git fetch -q`, then `git rev-list --left-right --count HEAD...@{u}` → `<ahead> <behind>`.
 3. behind = 0 → `Pulled: up to date`, go to Step 3.
-4. behind > 0, ahead = 0 → `git pull --ff-only`. It needs no stash: git refuses when an incoming commit touches a dirty file, so nothing is lost. Success → `Pulled: <behind> new commits`, go to Step 3.
-5. Diverged (ahead > 0 and behind > 0), or `--ff-only` refused → do not commit. Report `git log --oneline HEAD..@{u}`, the exact error and the dirty files it names.
+4. behind > 0 and ahead > 0 and `git rev-list --merges @{u}..HEAD` is non-empty → stop and report. A rebase would flatten that local merge commit, and merge commits stay untouched.
+5. behind > 0 → stash → pull → unstash, as separate commands:
+   1. `git status --porcelain` non-empty → `git stash push -u -m git-agent-sync`.
+   2. ahead = 0 → `git pull --ff-only`; ahead > 0 (local commits not on upstream) → `git pull --rebase`.
+   3. If step 1 stashed → `git stash pop --index`, so files staged before the sync stay staged.
+   4. Success → `Pulled: <behind> new commits`, go to Step 3.
 
-Pull only with `--ff-only`: rebase, merge, stash and `--autostash` get denied by the permission classifier. A brief line "Do NOT run git pull, rebase, …" forbids those rewrites, not this step. The `guard-git` hook fetches and blocks `git commit` while the branch is behind its upstream.
+On failure, do not commit and do not resolve by hand:
+
+- Pull or rebase conflict → `git rebase --abort` (if a rebase is in progress), then `git stash pop` if you stashed. Report the conflicting files.
+- `stash pop --index` refuses only because of the index → run `git stash pop` (the content is restored, staging is not) and report that the staging was lost.
+- `stash pop` conflict → stop. Leave the stash in place (never `stash drop`), and report the conflicting files and the stash ref from `git stash list`.
+
+Never use `--autostash`, `merge` or `reset` for this sync: the permission classifier denies `--autostash`, and a separate stash/pop keeps the user's work recoverable. A brief line "Do NOT run git pull, rebase, stash …" forbids other rewrites, not this step. The `guard-git` hook fetches and blocks `git commit` while the branch is behind its upstream.
 
 ### Step 3: Commit
 
@@ -59,7 +69,7 @@ Follow the preloaded `commit-convention` skill.
 
 ### Step 4: Push & PR (only with `ALLOW_PUSH=true`)
 
-Run `git pull --rebase origin <branch>` first if the branch exists on the remote, then push with `git push -u origin <branch>`, then open a PR with `gh pr create` following the `pr-template` skill — only if the prompt also contains `OPEN_PR=true`.
+Re-run Step 2 right before pushing, then push with `git push -u origin <branch>`. If the push is rejected because the remote moved on (`non-fast-forward`, `fetch first`), run Step 2 again (stash → pull → unstash) and push once more. In a detached worktree (no upstream), use `git fetch -q origin` then `git rebase origin/<branch>` instead, with the same conflict rule. Before the retry, re-run any ahead-list check the brief asks for (`git log origin/<branch>..HEAD --oneline`). A second rejection → stop and report. Then open a PR with `gh pr create` following the `pr-template` skill — only if the prompt also contains `OPEN_PR=true`.
 
 ### Step 5: Report
 

@@ -55,7 +55,7 @@ Run once: `"$HOME/script/issue-branch" --fetch --missing <branch> --pick <ids> [
 Invoke the `git-branch-promotion` skill first, then use the Agent tool (one call per repo, sequential):
 
 - subagent_type: git-agent
-- prompt: repo path, branch, the `cherry-pick` shas from Step 2 (oldest first), the worktree recipe from the skill (`git cherry origin/<branch> <sha>` check first, worktree from `origin/<branch>`, one pick per commit), the verbatim no-pull block from the skill, and the conflict rule above. Without `--push`, stop after the picks and report the worktree path and `git log origin/<branch>..HEAD --oneline`. With `--push`, also add the skill's ahead-list stop-and-ask step and the staging push skeleton. For `main`, also state that the user named `main` in `/dev-pick`, so these worktree cherry-picks are the git-agent's allowed `main` exception.
+- prompt: repo path, branch, the `cherry-pick` shas from Step 2 (oldest first), the worktree recipe from the skill (`git cherry origin/<branch> <sha>` check first, worktree from `origin/<branch>`, one pick per commit), the verbatim sync block from the skill, and the conflict rule above. Without `--push`, stop after the picks and report the worktree path and `git log origin/<branch>..HEAD --oneline`. With `--push`, also add the skill's ahead-list stop-and-ask step and the staging push skeleton. For `main`, also state that the user named `main` in `/dev-pick`, so these worktree cherry-picks are the git-agent's allowed `main` exception.
 
 ### Step 4: Report
 
