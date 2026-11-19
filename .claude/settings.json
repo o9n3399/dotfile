@@ -67,5 +67,19 @@
       "**Org-specific CLIs**: None configured"
     ]
   },
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/script/guard-channel-question.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
 }

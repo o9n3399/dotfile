@@ -20,7 +20,7 @@
 - When I correct a mistake you could repeat, propose a one-line rule for this file
 - When asked to hide or remove something, change only what was named; if the scope is unclear, ask with AskUserQuestion
 - A typed "Other" answer in AskUserQuestion is still an answer — keep asking the remaining questions as popups
-- When a turn ends with a choice for me, ask it with AskUserQuestion (options + Recommended), never a prose question
+- When a turn ends with a choice for me, ask it with AskUserQuestion (options + Recommended), never a prose question. In a `claude --channels` Discord session, send it with the discord `reply` tool instead (numbered options, Recommended first) and end the turn
 
 ## Response Style
 
