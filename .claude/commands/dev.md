@@ -1,6 +1,6 @@
 ---
 description: "Plan → code → review → test → UI → commit · --ask: ask approval/ship · --push: push + staging · --to demo,uat: also pick to these branches · --lite: sonnet · --no-auto: ask open questions"
-argument-hint: [task description | .dev-plan/<slug>.md] [--lite] [--ask] [--push] [--to <branch,...>] [--no-auto]
+argument-hint: "[task description | .dev-plan/<slug>.md] [--lite] [--ask] [--push] [--to <branch,...>] [--no-auto]"
 allowed-tools:
   - Agent
   - SendMessage
@@ -113,7 +113,7 @@ Only when the plan changes behavior, a rule, an endpoint, config, the data model
 ### Step 7: Ship
 
 Under `--push`, use `Commit + push + promote staging` (web: `Commit + push <base>`) without asking. Under `--ask`, AskUserQuestion: `Commit only`, `Commit + push <base>`, `Commit + push + promote staging` (service repos only), `Stop (leave uncommitted)`. Otherwise use `Commit only` without asking.
-Then, per repo, Agent(subagent_type: git-agent) — every prompt starts with "Commit on the current branch `<base branch>`; never create, switch or checkout a branch. Stage only: <files changed in this task>.":
+Then, per repo, Agent(subagent_type: git-agent) — every prompt starts with "Commit on the current branch `<base branch>`; never create, switch or checkout a branch. Sync only through your Step 2 (stash → pull → stash pop); never --autostash, merge or reset. Stage only: <files changed in this task>.":
 - `Commit only` → "… Do NOT push."
 - `Commit + push <base>` → "ALLOW_PUSH=true … Then `git fetch -q origin` and `git log origin/<base>..<base> --oneline`; if any commit is not this task's, return the list instead of pushing. Otherwise plain push `<base>`."
 - `Commit + push + promote staging` → the push above, then the promotion of `/dev-redmine` Step 7 (Skill git-branch-promotion: cherry-pick onto a temporary worktree of `origin/staging`, conflict → abort and report, test-runner on the worktree, push staging only on `PASS`). A conflict means staging and develop diverged — show the files and stop; never resolve it by branching.

@@ -1,6 +1,6 @@
 ---
 description: "Run a plan through /dev (code → review → test → UI → commit) · --only: coder only · --ask: ask ship · --push: push + staging · --lite: sonnet · --no-auto: ask open questions"
-argument-hint: [plan-path] [--only] [--lite] [--ask] [--push] [--no-auto]
+argument-hint: "[plan-path] [--only] [--lite] [--ask] [--push] [--no-auto]"
 allowed-tools:
   - Agent
   - SendMessage

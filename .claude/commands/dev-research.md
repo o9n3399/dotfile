@@ -1,7 +1,7 @@
 ---
 description: "Research a tech choice → cited report in .dev-plan/research/ · --deep: deeper, more sources"
 model: sonnet
-argument-hint: [question] [--deep]
+argument-hint: "[question] [--deep]"
 allowed-tools:
   - Agent
   - AskUserQuestion

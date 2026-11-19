@@ -1,7 +1,7 @@
 ---
 description: "Write docs for the repo's services + service index · --all: every service"
 model: sonnet
-argument-hint: [service...] [--all]
+argument-hint: "[service...] [--all]"
 allowed-tools:
   - Agent
   - AskUserQuestion

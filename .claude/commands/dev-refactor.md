@@ -1,6 +1,6 @@
 ---
 description: "Refactor, behavior kept: green baseline → small steps → review → commit · --ask: ask approval/commit · --lite: sonnet · --no-auto: ask open questions"
-argument-hint: [scope and goal] [--ask] [--lite] [--no-auto]
+argument-hint: "[scope and goal] [--ask] [--lite] [--no-auto]"
 allowed-tools:
   - Agent
   - SendMessage
@@ -74,7 +74,7 @@ Only when the refactor moved or renamed files, components or endpoints that the 
 
 ### Step 7: Commit
 
-Under `--ask`, AskUserQuestion: `Commit`, `Stop`; otherwise commit without asking. Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `refactor/<slug>` branch only if the user asked).").
+Under `--ask`, AskUserQuestion: `Commit`, `Stop`; otherwise commit without asking. Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a refactor (type `refactor`) on the current branch `<base branch>` per `commit-convention`. Sync only through your Step 2 (stash → pull → stash pop); never --autostash, merge or reset. Never create, switch or checkout a branch (`develop` for services, `staging` for web; a `refactor/<slug>` branch only if the user asked).").
 
 ## Output Summary
 

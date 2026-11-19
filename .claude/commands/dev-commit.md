@@ -20,7 +20,7 @@ Use the Agent tool:
 
 - subagent_type: git-agent
 - description: Commit changes
-- prompt: Commit the current changes. Hint from user: $ARGUMENTS
+- prompt: Commit the current changes. Sync only through your Step 2 (stash → pull → stash pop); never --autostash, merge or reset. Hint from user: $ARGUMENTS
 
 ### Step 2: Report
 

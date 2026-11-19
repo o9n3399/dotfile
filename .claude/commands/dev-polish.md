@@ -1,6 +1,6 @@
 ---
 description: "Tighten code syntax, behavior kept · --review: also run the reviewer"
-argument-hint: [path...] [--review]
+argument-hint: "[path...] [--review]"
 allowed-tools:
   - Agent
   - SendMessage

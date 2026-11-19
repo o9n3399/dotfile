@@ -1,7 +1,7 @@
 ---
 description: "Lint + typecheck + tests (scoped to changes) · --full: full suite"
 model: sonnet
-argument-hint: [path] [--full]
+argument-hint: "[path] [--full]"
 allowed-tools:
   - Agent
   - SendMessage

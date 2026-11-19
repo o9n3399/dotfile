@@ -1,6 +1,6 @@
 ---
 description: "Bug fix: red test → root-cause fix → review → commit · --ask: ask approval/ship · --push: push + staging · --to demo,uat: also pick to these branches · --lite: sonnet · --no-auto: ask open questions"
-argument-hint: [bug description] [--ask] [--push] [--to <branch,...>] [--lite] [--no-auto]
+argument-hint: "[bug description] [--ask] [--push] [--to <branch,...>] [--lite] [--no-auto]"
 allowed-tools:
   - Agent
   - SendMessage
@@ -79,7 +79,7 @@ Only when the fix changes a rule or behavior that a `docs/*.md`, `CLAUDE.md` or 
 ### Step 7: Ship
 
 Under `--push`, use `Commit + push + promote staging` (web: `Commit + push <base>`) without asking. Under `--ask`, AskUserQuestion: `Commit only`, `Commit + push <base>`, `Commit + push + promote staging` (service repos only), `Stop (leave uncommitted)`. Otherwise use `Commit only` without asking.
-Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`; never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked)."). A push answer → the push, promotion and `--to` branches of `/dev` Step 7.
+Commit → Agent(subagent_type: git-agent, prompt: "Commit the current changes as a fix (type `fix`) on the current branch `<base branch>` per `commit-convention`. Sync only through your Step 2 (stash → pull → stash pop); never --autostash, merge or reset. Never create, switch or checkout a branch (`develop` for services, `staging` for web; a `fix/<slug>` branch only if the user asked)."). A push answer → the push, promotion and `--to` branches of `/dev` Step 7.
 
 ## Output Summary
 

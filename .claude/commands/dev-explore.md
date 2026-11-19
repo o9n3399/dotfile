@@ -1,7 +1,7 @@
 ---
 description: Explore a flow or area of existing code via the explorer agent — context, flow, issues — noted in .dev-plan/explore/
 model: sonnet
-argument-hint: [topic] [repo path]
+argument-hint: "[topic] [repo path]"
 allowed-tools:
   - Agent
   - AskUserQuestion

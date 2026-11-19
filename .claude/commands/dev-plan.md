@@ -1,7 +1,7 @@
 ---
 description: "Write a plan, then Approve + run /dev · --lite: sonnet · --push: /dev pushes + staging · --no-auto: ask open questions"
 model: sonnet
-argument-hint: [task description] [--lite] [--push] [--no-auto]
+argument-hint: "[task description] [--lite] [--push] [--no-auto]"
 allowed-tools:
   - Agent
   - AskUserQuestion
