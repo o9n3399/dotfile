@@ -26,7 +26,7 @@ Not stop points — list them in the summary and go on: format- or doc-only find
 - **default auto-answer**: pick the recommended answer to Open Questions and record them under `## Assumptions`. Passing `--auto` changes nothing.
 - **`--no-auto`**: ask Open Questions as popups instead.
 - **`--push`**: ship as `Commit + push + promote staging` (service repos; web: `Commit + push <base>`). In `/dev-redmine` it means push + resolve. Never inferred from anything but the user's own message.
-- **`--to <branch,...>`**: extra promotion branches (`staging|demo|uat`) after the staging pick, service repos only. Needs `--push` or a push answer. Never inferred from anything but the user's own message.
+- **`--to <branch,...>`**: extra promotion branches (`staging|demo|uat`) after the staging pick, service and web repos (web picks its pushed `staging` sha; a repo without `origin/<branch>` skips it). Needs `--push` or a push answer. Never inferred from anything but the user's own message.
 
 ## Standard options
 

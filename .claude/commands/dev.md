@@ -28,7 +28,7 @@ Strip every flag from the task text; `<task>` below means the text without flags
 - **Default (`--yes`)**: skip the Step 2 approval (still show the plan summary) and answer Step 7 with `Commit only`. Passing `--yes` changes nothing.
 - **`--ask`**: ask the Step 2 approval and the Step 7 Ship question.
 - **`--push`**: answer Step 7 with `Commit + push + promote staging` (web: `Commit + push <base>`). Only from the user's own message.
-- **`--to <branch,...>`**: also promote to these branches after staging (`staging|demo|uat`, comma separated, service repos only). Needs `--push` or a push answer; ignored otherwise. Only from the user's own message, never inferred or defaulted.
+- **`--to <branch,...>`**: also promote to these branches after staging (`staging|demo|uat`, comma separated, service and web repos). Needs `--push` or a push answer; ignored otherwise. Only from the user's own message, never inferred or defaulted.
 - **Given plan**: if `<task>` names an existing plan file (a `.dev-plan/*.md` path, or `--plan <path>`), that is `<plan-path>` — skip Step 1 (see Step 0). Any other text in `<task>` is extra context for the coder.
 - **`--no-auto`**: asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
 
@@ -117,7 +117,7 @@ Then, per repo, Agent(subagent_type: git-agent) — every prompt starts with "Co
 - `Commit only` → "… Do NOT push."
 - `Commit + push <base>` → "ALLOW_PUSH=true … Then `git fetch -q origin` and `git log origin/<base>..<base> --oneline`; if any commit is not this task's, return the list instead of pushing. Otherwise plain push `<base>`."
 - `Commit + push + promote staging` → the push above, then the promotion of `/dev-redmine` Step 7 (Skill git-branch-promotion: cherry-pick onto a temporary worktree of `origin/staging`, conflict → abort and report, test-runner on the worktree, push staging only on `PASS`). A conflict means staging and develop diverged — show the files and stop; never resolve it by branching.
-Each branch in `--to` other than `staging`, in the given order, repeats that promotion: `git fetch -q origin`, `git cherry origin/<branch> <sha>` (`-` means already applied, skip), cherry-pick onto a temporary worktree of `origin/<branch>`, conflict → `cherry-pick --abort`, report the files and stop the batch, test-runner on the worktree, push only on `PASS`, then remove and prune the worktree. A branch outside `staging|demo|uat` stops the run before any push.
+Each branch in `--to` other than `staging`, in the given order, repeats that promotion: `git fetch -q origin`, `git cherry origin/<branch> <sha>` (`-` means already applied, skip), cherry-pick onto a temporary worktree of `origin/<branch>`, conflict → `cherry-pick --abort`, report the files and stop the batch, test-runner on the worktree, push only on `PASS`, then remove and prune the worktree. A branch outside `staging|demo|uat` stops the run before any push. The web repo runs the same promotion after its `Commit + push <base>`, picking its pushed `staging` sha. A repo with no `origin/<branch>` (`git ls-remote --exit-code --heads origin <branch>` fails) skips that branch and the summary says so.
 
 No PR option: the remotes are GitLab without `gh`. Open a PR/MR only when the user's own message asks for one, and then still commit on `<base>` unless they name a branch.
 

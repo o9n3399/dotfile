@@ -30,7 +30,7 @@ Flags follow skill `dev-pipeline-stops`; never stop or ask outside its stop poin
 - **Default (`--yes`)**: skip the plan approval (Step 3), still show the plan summary. Passing `--yes` changes nothing.
 - **`--ask`**: ask the plan approval (Step 3) and the push question (Step 7).
 - **`--push`**: counts as the explicit push instruction; Step 7 pushes and resolves without asking. Without `--push` or `--ask`, Step 7 keeps the commit local.
-- **`--to <branch,...>`**: also promote to these branches after staging (`staging|demo|uat`, comma separated, service repos only). Needs `--push` or a push answer; ignored otherwise. Only from the user's own message, never inferred or defaulted.
+- **`--to <branch,...>`**: also promote to these branches after staging (`staging|demo|uat`, comma separated, service and web repos). Needs `--push` or a push answer; ignored otherwise. Only from the user's own message, never inferred or defaulted.
 - **`--lite`**: pass `model: sonnet` on every planner and reviewer Agent call.
 - **`--no-resolve`**: stop after the push, skip Step 8.
 - **`--no-auto`**: asks the planner's Open Questions instead of auto-picking the recommended answer; passing `--auto` changes nothing.
@@ -95,7 +95,7 @@ On a push answer, per backend repo, Agent(subagent_type: git-agent, model: sonne
 
 Web: Agent(subagent_type: git-agent, prompt: "ALLOW_PUSH=true Sync only through your Step 2 (stash → pull → stash pop); never --autostash, merge or reset. Run `git fetch -q origin` and `git log origin/staging..staging --oneline`; if a commit is outside this issue, return the list instead of pushing. Push `staging` (plain push).").
 
-Each branch in `--to` other than `staging`, in the given order, repeats the staging promotion: `git fetch -q origin`, `git cherry origin/<branch> <sha>` (`-` means already applied, skip), cherry-pick onto a temporary worktree of `origin/<branch>`, conflict → `cherry-pick --abort`, report the files and stop the batch, test-runner on the worktree, push only on `PASS`, then remove and prune the worktree. A branch outside `staging|demo|uat` stops the run before any push. Skip the web repo.
+Each branch in `--to` other than `staging`, in the given order, repeats the staging promotion: `git fetch -q origin`, `git cherry origin/<branch> <sha>` (`-` means already applied, skip), cherry-pick onto a temporary worktree of `origin/<branch>`, conflict → `cherry-pick --abort`, report the files and stop the batch, test-runner on the worktree, push only on `PASS`, then remove and prune the worktree. A branch outside `staging|demo|uat` stops the run before any push. The web repo runs the same promotion after its `staging` push, picking its pushed `staging` sha. A repo with no `origin/<branch>` (`git ls-remote --exit-code --heads origin <branch>` fails) skips that branch and the summary says so.
 
 `Push only` and `--no-resolve` skip Step 8. `Stop here` records the issue as `committed, not pushed` and continues with the next issue.
 

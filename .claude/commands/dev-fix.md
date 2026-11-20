@@ -25,7 +25,7 @@ Flags follow skill `dev-pipeline-stops`: by default (`--yes`) skip the Step 2 ap
 
 ## Cost Rules
 
-- **`--to <branch,...>`**: as in `/dev` Step 7 (`staging|demo|uat`, service repos, needs `--push` or a push answer, never inferred).
+- **`--to <branch,...>`**: as in `/dev` Step 7 (`staging|demo|uat`, service and web repos, needs `--push` or a push answer, never inferred).
 - **`--lite`** (small, low-risk changes): strip it from the task text and pass `model: sonnet` on every planner and reviewer Agent call.
 - **Reuse the coder**: keep the agent ID of the first coder call. Send every later fix to it with SendMessage (still prefixed `Mode: bug-fix.`) instead of spawning a new coder — it already holds the plan and the files it changed. Spawn a new coder only if SendMessage fails.
 - **Unfinished coder**: if the coder reports remaining steps or stops at its turn limit, SendMessage it "Continue <plan-path> from the first unchecked step." before testing — at most twice, then report the remaining steps and stop.
