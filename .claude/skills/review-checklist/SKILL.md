@@ -16,10 +16,12 @@ Check in this order, reading surrounding code for context:
 
 1. **Correctness** — logic errors, off-by-one, null/undefined, wrong condition, race conditions, unhandled async
 2. **Edge cases** — empty input, large input, concurrent calls, partial failure, retries
-3. **Security** — see `~/.claude/skills/review-checklist/reference/security.md`
-4. **Performance** — see `~/.claude/skills/review-checklist/reference/performance.md`
-5. **Tests** — new behavior without a test, tests that can't fail, deleted/weakened assertions
-6. **Plan conformance** — unchecked steps claimed done, scope creep, undocumented deviations
+3. **Error handling** — see `~/.claude/skills/review-checklist/reference/error-handling.md`
+4. **Security** — see `~/.claude/skills/review-checklist/reference/security.md`
+5. **Performance** — see `~/.claude/skills/review-checklist/reference/performance.md`
+6. **Database** — only when entities, migrations or queries changed: see `~/.claude/skills/review-checklist/reference/database.md`
+7. **Tests** — new behavior without a test, tests that can't fail, deleted/weakened assertions
+8. **Plan conformance** — unchecked steps claimed done, scope creep, undocumented deviations
 
 Severity:
 - `CRITICAL` — bug, data loss, or security hole reachable in production

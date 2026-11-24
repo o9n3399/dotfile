@@ -5,6 +5,10 @@ import os
 import re
 import sys
 
+from guard_switch import exit_if_off
+
+exit_if_off("SECRETS")
+
 SECRET_FILE = re.compile(r"(^|[\s/'\"=])(\.env(\.(?!example\b|sample\b|template\b)[\w.-]+)?|[\w.-]+\.(pem|key|p12|pfx|jks)|id_(rsa|ed25519|ecdsa))(?=$|[\s'\";|&)])")
 # Exclusion flags name secret files only to skip them, e.g. grep --exclude=.env or rg -g '!*.pem'.
 EXCLUDE_FLAG = re.compile(r"--exclude(-dir)?=\S+|--exclude(-dir)?\s+\S+|(-g|--glob)[=\s]+['\"]?!\S+")
