@@ -1,6 +1,7 @@
 {
   "env": {
-    "BROWSER": "google-chrome-stable"
+    "BROWSER": "google-chrome-stable",
+    "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE": "1"
   },
   "attribution": {
     "commit": "",
@@ -8,9 +9,7 @@
     "sessionUrl": false
   },
   "permissions": {
-    "allow": [
-      "Bash(docker exec postgres_db psql:*)"
-    ],
+    "allow": ["Bash(docker exec postgres_db psql:*)"],
     "defaultMode": "bypassPermissions"
   },
   "model": "opus",
