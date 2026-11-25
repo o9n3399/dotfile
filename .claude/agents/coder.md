@@ -40,7 +40,7 @@ You are forbidden from:
 ## Tool Use
 
 - **Scope**: pass the repo or service path from the prompt to every search, never the home directory — home-wide searches time out. Use absolute paths for Read.
-- **Read and search** with Read, Grep and Glob, not `grep`/`sed -n`/`head`/`cat` chains in Bash. For a large file, Read with `offset`/`limit` around the Grep hit. Only when Grep/Glob are not available in the session, search with `grep -rn` in Bash.
+- **Read and search** with Read, Grep and Glob, not `grep`/`sed -n`/`head`/`cat` chains in Bash. For a large file, Read with `offset`/`limit` around the Grep hit. Subagents often lack Grep: if it is unavailable, use `rg -n 'pattern' /abs/path` in Bash with quoted globs (the shell is zsh).
 - **Bash** is for running things: tests, tsc, docker, curl. The tool name is `Bash` (case-sensitive); `Monitor` is not available.
 - **The shell is zsh**: compare with `[[ $a == $b ]]` (`[ a == b ]` fails with `= not found`), quote globs (`--include='*.ts'`), and never keep a command in a string variable (`$CMD` is not word-split, so it runs as one missing command) — use a function or an array.
 - **Waiting for a service**: poll with a bounded loop, e.g. `for i in {1..30}; do curl -sf <health-url> > /dev/null && break; sleep 2; done`, not a bare `sleep N`.

@@ -19,6 +19,7 @@
 - Bugs: reproduce first (failing test or exact repro), fix the root cause, not the symptom
 - When I correct a mistake you could repeat, propose a one-line rule for this file
 - When asked to hide or remove something, change only what was named; if the scope is unclear, ask with AskUserQuestion
+- Skill files: load skills with the Skill tool; to Read one, global skills live in `~/.claude/skills/<name>/`, project skills in `<repo>/.claude/skills/<name>/` — never Glob for `SKILL.md` from `~`
 - A typed "Other" answer in AskUserQuestion is still an answer — keep asking the remaining questions as popups
 - When a turn ends with a choice for me, ask it with AskUserQuestion (options + Recommended), never a prose question. In a `claude --channels` Discord session, send it with the discord `reply` tool instead (numbered options, Recommended first) and end the turn
 

@@ -5,6 +5,7 @@
 #   PreToolUse         ^mcp__  -> `mcp-health.py check` blocks calls to a server that keeps failing
 import json
 import os
+import re
 import sys
 import time
 
@@ -15,6 +16,13 @@ exit_if_off("MCP")
 STATE = os.path.expanduser("~/.cache/claude-mcp-health.json")
 WINDOW_SECONDS = 180
 FAIL_THRESHOLD = 2
+# Only transport-level errors mean the server is down; a tool rejecting bad input (e.g. {"ok": false}) or a
+# Playwright locator timeout is the caller's mistake and must not lock the server.
+TRANSPORT_ERROR = re.compile(
+    r"MCP error -3200[01]|connection closed|not connected|ECONNREFUSED|ECONNRESET|ENOTFOUND|EPIPE|"
+    r"socket hang up|fetch failed|request timed out|server (?:has )?(?:disconnected|exited)",
+    re.I,
+)
 
 
 def load():
@@ -32,7 +40,8 @@ def save(state):
 
 
 mode = sys.argv[1] if len(sys.argv) > 1 else "check"
-parts = json.load(sys.stdin).get("tool_name", "").split("__")
+data = json.load(sys.stdin)
+parts = data.get("tool_name", "").split("__")
 if len(parts) < 3:
     sys.exit(0)
 server = parts[1]
@@ -41,6 +50,8 @@ state = load()
 recent = [t for t in state.get(server, []) if now - t < WINDOW_SECONDS]
 
 if mode == "fail":
+    if not TRANSPORT_ERROR.search(str(data.get("error") or data.get("tool_response") or "")):
+        sys.exit(0)
     state[server] = recent + [now]
     save(state)
 elif mode == "ok":
